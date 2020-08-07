@@ -14,8 +14,8 @@ PlayerTest >> testCantPlayACardThatIsNotInTheHand [
 		playedBy: {player1. player2}
 		throwing: {(RandomDice withFaces: 6)}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (Deck with: {RepeatEffect new}).
-	cardToPlay := Card with: OverloadEffect new.
+		using: (Deck newWith: {RepeatEffect new}).
+	cardToPlay := Card newWith: OverloadEffect new.
 	self
 		should: [ game play: cardToPlay for: player1 on: player2 ]
 		raise: AssertionFailure
@@ -29,9 +29,9 @@ PlayerTest >> testCardsInHandOfReturnsEmptyColectionIfThePlayerHasNoCards [
 		playedBy: {player1. player2}
 		throwing: {SequentialDice withSequence: {10. 1}}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck withSequence: {Card with: AccelerationEffect new}).
-	game play: (Card with: AccelerationEffect new) for: player1 on: game players.
-	game play: (Card with: AccelerationEffect new) for: player1 on: game players.
+		using: (GimmickDeck withSequence: {Card newWith: AccelerationEffect new}).
+	game play: (Card newWith: AccelerationEffect new) for: player1 on: game players.
+	game play: (Card newWith: AccelerationEffect new) for: player1 on: game players.
 	self assert: (game cardsInHandOf: player1) asArray equals: {  }
 ]
 
@@ -42,7 +42,7 @@ PlayerTest >> testPlayerThatFinishedCantPlayACard [
 		playedBy: {player1. player2}
 		throwing: {SequentialDice withSequence: {10. 1}}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck withSequence: {Card with: RepeatEffect new}).
+		using: (GimmickDeck withSequence: {Card newWith: RepeatEffect new}).
 	game throwDicesFor: player1.
 	game throwDicesFor: player2.
 	card := (game cardsInHandOf: player1) first.
@@ -59,7 +59,7 @@ PlayerTest >> testPlayingACardRemovesItFromHand [
 		playedBy: {player1. player2}
 		throwing: {(RandomDice withFaces: 6)}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (Deck with: {AccelerationEffect new}).
+		using: (Deck newWith: {AccelerationEffect new}).
 	cardToPlay := (game cardsInHandOf: player1) first.
 	game play: cardToPlay for: player1 on: game players. 
 	self assert: (game cardsInHandOf: player1) size equals: 1

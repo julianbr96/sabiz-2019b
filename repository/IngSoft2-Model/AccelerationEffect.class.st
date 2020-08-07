@@ -7,16 +7,11 @@ Class {
 	#category : #'IngSoft2-Model'
 }
 
-{ #category : #comparing }
-AccelerationEffect >> = anEffect [
-	^ self class = anEffect class
-]
-
 { #category : #effect }
-AccelerationEffect >> applyEffectOn: players on: aGame triggeredBy: aPlayer [
-	self checkTurnOf: aPlayer in: aGame.
-	aGame addEffectOfCard: (Card with: self).
-	aGame addPlayedCard: (Card with: self)
+AccelerationEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
+	super applyOn: target on: aGame triggeredBy: aPlayer.
+	self assert: target = aGame players description: 'Tried to play acceleration card on a specific set of players instead of all of them'.
+	aGame addPlayedCard: (Card newWith: self) to: target by: aPlayer
 ]
 
 { #category : #evaluating }

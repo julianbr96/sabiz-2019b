@@ -11,23 +11,28 @@ Class {
 }
 
 { #category : #'instance creation' }
-Card class >> with: anEffect [
+Card class >> newWith: anEffect [
 	^ self new initializeWith: anEffect
 ]
 
 { #category : #comparing }
 Card >> = aCard [
-	^ self effect = aCard effect
+	^ aCard class = self class and: [self effect class = aCard effect class]
 ]
 
 { #category : #effect }
 Card >> applyEffectOn: players on: aGame triggeredBy: aPlayer [
-	effect applyEffectOn: players on: aGame triggeredBy: aPlayer
+	effect applyOn: players on: aGame triggeredBy: aPlayer
 ]
 
 { #category : #accessing }
 Card >> effect [
 	^ effect
+]
+
+{ #category : #accessing }
+Card >> hash [
+	^ self effect className hash
 ]
 
 { #category : #initialization }

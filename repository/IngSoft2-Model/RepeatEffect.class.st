@@ -7,25 +7,9 @@ Class {
 	#category : #'IngSoft2-Model'
 }
 
-{ #category : #comparing }
-RepeatEffect >> = anEffect [
-	^ self class = anEffect class
-]
-
 { #category : #effect }
-RepeatEffect >> applyEffectOn: players on: aGame triggeredBy: aPlayer [
-	| history |
-	history := aGame historyOf: aPlayer.
-	self checkIfDicesWereRolledAtLeastOnceIn: history.
-	aGame
-		player: aPlayer
-		triggersEffectAt: (history at: history size - 1) position.
-	aGame addPlayedCard: (Card with: self)
-]
-
-{ #category : #effect }
-RepeatEffect >> checkIfDicesWereRolledAtLeastOnceIn: history [
-	history size < 2
-		ifTrue: [ AssertionFailure
-				signal: 'Cant play that card because the dices never rolled' ]
+RepeatEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
+	self assert: target size = 1 description: 'The repeat card can only be played on a single player'.
+	self assert: (aGame playerHasNotFinished: target first) description: 'The repeat card cant be played on a player that has already finished'.
+	aGame repeatLastEffectTriggeredBy: target first
 ]

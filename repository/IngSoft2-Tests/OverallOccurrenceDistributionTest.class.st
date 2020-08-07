@@ -17,7 +17,7 @@ OverallOccurrenceDistributionTest >> assertPercentageOf: element in: collection 
 { #category : #tests }
 OverallOccurrenceDistributionTest >> testCantCreateEmptyDistribution [
 	self
-		should: [ OverallOccurrenceDistribution with: {} ]
+		should: [ OverallOccurrenceDistribution newWith: {} ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Tried to create an empty distribution'
 ]
@@ -26,7 +26,7 @@ OverallOccurrenceDistributionTest >> testCantCreateEmptyDistribution [
 OverallOccurrenceDistributionTest >> testDistributionYieldsExpectedProbabilityForEachElement [
 	| distribution generation tolerance |
 	tolerance := 5.
-	distribution := OverallOccurrenceDistribution with:
+	distribution := OverallOccurrenceDistribution newWith:
 			{(IndividualOccurrenceProbability of: #element1 withProbability: 20).
 			(IndividualOccurrenceProbability of: #element2 withProbability: 30).
 			(IndividualOccurrenceProbability of: #element3 withProbability: 50)}.
@@ -40,7 +40,7 @@ OverallOccurrenceDistributionTest >> testDistributionYieldsExpectedProbabilityFo
 OverallOccurrenceDistributionTest >> testProbabilityOfGivenElementHasCorrectValue [
 	| distribution |
 	distribution := OverallOccurrenceDistribution
-		with:
+		newWith:
 			{(IndividualOccurrenceProbability of: #element1 withProbability: 30).
 			(IndividualOccurrenceProbability of: #element2 withProbability: 26).
 			(IndividualOccurrenceProbability of: #element3 withProbability: 24).
@@ -52,14 +52,14 @@ OverallOccurrenceDistributionTest >> testProbabilityOfGivenElementHasCorrectValu
 OverallOccurrenceDistributionTest >> testTotalProbabilitiesCannotBeDifferentToOneHundred [
 	self
 		should: [ OverallOccurrenceDistribution
-				with:
+				newWith:
 					{(IndividualOccurrenceProbability of: #element1 withProbability: 25).
 					(IndividualOccurrenceProbability of: #element2 withProbability: 25)} ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Probabilities do not add up to a hundred'.
 	self
 		should: [ OverallOccurrenceDistribution
-				with:
+				newWith:
 					{(IndividualOccurrenceProbability of: #element1 withProbability: 80).
 					(IndividualOccurrenceProbability of: #element3 withProbability: 25)} ]
 		raise: AssertionFailure

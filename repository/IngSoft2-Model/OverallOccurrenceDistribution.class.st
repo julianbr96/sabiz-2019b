@@ -16,11 +16,18 @@ OverallOccurrenceDistribution class >> evenDistributionFor: elements [
 	self assert: [ elements isNotEmpty ].
 	probability := 100 / elements size.
 	^ self
-		with:
+		newWith:
 			(elements
 				collect:
 					[ :each | IndividualOccurrenceProbability of: each withProbability: probability ])
 				asArray
+]
+
+{ #category : #'instance creation' }
+OverallOccurrenceDistribution class >> newWith: distribution [
+	self assert: distribution isNotEmpty description: 'Tried to create an empty distribution'.
+	self probabilitiesAddUpToAHundred: distribution.
+	^ self new initializeWith: distribution
 ]
 
 { #category : #validation }
@@ -28,13 +35,6 @@ OverallOccurrenceDistribution class >> probabilitiesAddUpToAHundred: distributio
 	self
 		assert: (distribution collect: [ :each | each probability ]) sum = 100
 		description: 'Probabilities do not add up to a hundred'
-]
-
-{ #category : #'instance creation' }
-OverallOccurrenceDistribution class >> with: distribution [
-	self assert: distribution isNotEmpty description: 'Tried to create an empty distribution'.
-	self probabilitiesAddUpToAHundred: distribution.
-	^ self new initializeWith: distribution
 ]
 
 { #category : #generation }
@@ -52,10 +52,8 @@ OverallOccurrenceDistribution >> initializeWith: aDistribution [
 
 { #category : #accessing }
 OverallOccurrenceDistribution >> probabilityOf: element [
-	^ (distribution
-		select:
-			[ :each | each element = element ])
-		first probability
+	^ (distribution select: [ :each | each element = element ]) first
+		probability
 ]
 
 { #category : #generation }
@@ -66,8 +64,6 @@ OverallOccurrenceDistribution >> random [
 		do: [ :each | 
 			collection
 				addAll:
-					(OrderedCollection
-						new: each probability rounded
-						withAll: (each element)) ].
+					(OrderedCollection new: each probability rounded withAll: each element) ].
 	^ collection atRandom
 ]

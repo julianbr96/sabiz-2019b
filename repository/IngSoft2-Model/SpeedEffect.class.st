@@ -7,16 +7,12 @@ Class {
 	#category : #'IngSoft2-Model'
 }
 
-{ #category : #comparing }
-SpeedEffect >> = anEffect [
-	^ self class = anEffect class
-]
-
-{ #category : #effect }
-SpeedEffect >> applyEffectOn: player on: aGame triggeredBy: aPlayer [
-	self checkTurnOf: aPlayer in: aGame.
-	(aGame historyOf: player) last addEffectOfCard: (Card with: self).
-	aGame addPlayedCard: (Card with: self)
+{ #category : #evaluating }
+SpeedEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
+	super applyOn: target on: aGame triggeredBy: aPlayer.
+	self assert: target size = 1 description: 'The speedup card can only be played on a single player'.
+	self assert: (aGame playerHasNotFinished: target first) description: 'The speed card cant be played on a player that has already finished'.
+	aGame addPlayedCard: (Card newWith: self) to: target by: aPlayer
 ]
 
 { #category : #evaluating }

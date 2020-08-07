@@ -7,25 +7,7 @@ Class {
 	#category : #'IngSoft2-Model'
 }
 
-{ #category : #comparing }
-RedoEffect >> = anEffect [
-	^ self class = anEffect class
-]
-
 { #category : #effect }
-RedoEffect >> applyEffectOn: players on: aGame triggeredBy: aPlayer [
-	| lastCardPlayed |
-	self checkIfOneCardWasPlayesAtLeastin: aGame.
-	lastCardPlayed := aGame allCardsPlayed last.
-	lastCardPlayed effect
-		applyEffectOn: players
-		on: aGame
-		triggeredBy: aPlayer
-]
-
-{ #category : #effect }
-RedoEffect >> checkIfOneCardWasPlayesAtLeastin: aGame [
-	aGame allCardsPlayed size < 1
-		ifTrue: [ AssertionFailure
-				signal: 'Cant play that card because no other cards has been played' ]
+RedoEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
+	aGame replayLastCardOn: target for: aPlayer
 ]

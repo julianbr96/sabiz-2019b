@@ -11,10 +11,10 @@ Class {
 }
 
 { #category : #'instance creation' }
-Deck class >> with: cardTypes [
-	self assert: [ cardTypes isNotEmpty ].
+Deck class >> newWith: cardEffectTypes [
+	self assert: cardEffectTypes isNotEmpty.
 	^ self new
-		initializeWith: (OverallOccurrenceDistribution evenDistributionFor: cardTypes)
+		initializeWith: (OverallOccurrenceDistribution evenDistributionFor: cardEffectTypes)
 ]
 
 { #category : #initialization }
@@ -24,5 +24,5 @@ Deck >> initializeWith: distribution [
 
 { #category : #accessing }
 Deck >> nextCard [
-	^ Card with: cardsDistribution random
+	^ Card newWith: cardsDistribution random
 ]

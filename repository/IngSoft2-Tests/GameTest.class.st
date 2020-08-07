@@ -328,7 +328,7 @@ GameTest >> testSimplisticGameEndsSuccessfully [
 { #category : #'test - playing' }
 GameTest >> testSimplisticGameYieldsExpectedStateList [
 	| game expectedHistory cards |
-	cards := { Card with: AccelerationEffect new. Card with: AccelerationEffect new }.
+	cards := { Card newWith: AccelerationEffect new. Card newWith: AccelerationEffect new }.
 	expectedHistory := {
 		PlayerState on: 1 and: 0 and: 0 holding: cards.
 		PlayerState on: 1 and: 0 and: 1 holding: cards.

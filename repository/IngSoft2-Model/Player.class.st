@@ -12,25 +12,13 @@ Class {
 }
 
 { #category : #'instance creation' }
-Player class >> named: playerName [
+Player class >> newNamed: playerName [
 	^ self new initializeNamed: playerName
 ]
 
 { #category : #comparing }
 Player >> = player [
-	^ self name = player name
-]
-
-{ #category : #accessing }
-Player >> cardsInHand [
-	^ cardsInHand
-]
-
-{ #category : #validation }
-Player >> checkAvailabilityOf: aCard [
-	self
-		assert: [ cardsInHand includes: aCard ]
-		description: 'That card is not in the Hand'
+	^ (self class = player class) and: [(self name = player name)]
 ]
 
 { #category : #comparing }
@@ -41,17 +29,9 @@ Player >> hash [
 { #category : #initialization }
 Player >> initializeNamed: aName [
 	playerName := aName.
-	cardsInHand := OrderedCollection new
 ]
 
 { #category : #accessing }
 Player >> name [
 	^ playerName
-]
-
-{ #category : #playing }
-Player >> playCard: aCard on: aGame affecting: players [
-	self checkAvailabilityOf: aCard.
-	aCard applyEffectOn: players on: aGame triggeredBy: self.
-	cardsInHand remove: aCard
 ]

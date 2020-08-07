@@ -8,6 +8,8 @@ Class {
 }
 
 { #category : #effect }
-NullEffect >> applyOn: game triggeredBy: player in: state [
-	game updateStateFor: player with: state
+NullEffect >> applyOn: game triggeredBy: player [
+	"Its a dead method, does nothing"
+
+	
 ]

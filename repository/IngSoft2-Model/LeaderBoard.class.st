@@ -23,13 +23,13 @@ LeaderBoard >> at: position [
 ]
 
 { #category : #accessing }
-LeaderBoard >> finishRanking [
-	^ elements asArray
+LeaderBoard >> doesNotInclude: player [
+	^ (elements includes: player) not 
 ]
 
 { #category : #accessing }
-LeaderBoard >> includes: player [
-	^ elements includes: player
+LeaderBoard >> finishRanking [
+	^ elements asArray
 ]
 
 { #category : #accessing }
@@ -58,5 +58,5 @@ LeaderBoard >> winner [
 	self
 		assert: [ self isNotEmpty ]
 		description: 'No one has reached the end yet'.
-	^ self at: 1
+	^ elements first
 ]

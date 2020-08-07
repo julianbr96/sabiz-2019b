@@ -11,13 +11,8 @@ Class {
 }
 
 { #category : #'instance creation' }
-Spot class >> with: anEffect [
-	^ self new with: anEffect
-]
-
-{ #category : #effect }
-Spot >> applyEffectOn: game triggeredBy: player in: state [
-	effect applyOn: game triggeredBy: player in: state
+Spot class >> newWith: anEffect [
+	^ self new initializeWith: anEffect
 ]
 
 { #category : #accessing }
@@ -26,6 +21,6 @@ Spot >> effect [
 ]
 
 { #category : #'instance creation' }
-Spot >> with: anEffect [
+Spot >> initializeWith: anEffect [
 	effect := anEffect
 ]

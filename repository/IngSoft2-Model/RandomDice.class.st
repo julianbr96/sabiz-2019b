@@ -11,7 +11,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-RandomDice class >> withFaces: faces [
+RandomDice class >> newWithFaces: faces [
 	self
 		assert: [ faces > 3 ]
 		description: 'Number of Faces should be greater than three'.

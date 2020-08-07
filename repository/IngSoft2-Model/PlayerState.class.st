@@ -6,24 +6,34 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'position',
-		'lapNumber',
-		'board',
-		'permanentEffects'
+		'roundNumber',
+		'cards'
 	],
 	#category : #'IngSoft2-Model'
 }
 
 { #category : #'instance creation' }
-PlayerState class >> on: position and: lapNumber [
-	^ self on: position and: lapNumber under: OrderedCollection new
+PlayerState class >> on: spotNumber andLap: lapNumber andRound: roundNumber holding: cards [
+	^ self new
+		initializeOn: (Position newOn: spotNumber and: lapNumber)
+		and: roundNumber
+		holding: cards asOrderedCollection
 ]
 
 { #category : #'instance creation' }
-PlayerState class >> on: position and: lapNumber under: playerEffects [
-	self
-		assert: position > 0
-		description: 'A player cant be on a position lower than 1'.
-	^ self new on: position and: lapNumber under: playerEffects
+PlayerState class >> on: spotNumber andLap: lapNumber holding: cards [
+	"Used to create the first state"
+	^ self on: spotNumber andLap: lapNumber andRound: 0 holding: cards
+]
+
+{ #category : #comparing }
+PlayerState >> = aPlayerState [
+	^ aPlayerState class = self class
+		and: [ (self spotNumber = aPlayerState spotNumber
+				and: self lapNumber = aPlayerState lapNumber)
+				and:
+					(self roundNumber = aPlayerState roundNumber
+						and: self cardsInHand = aPlayerState cardsInHand) ]
 ]
 
 { #category : #comparing }
@@ -33,26 +43,34 @@ PlayerState >> > aState [
 		ifFalse: [ ^ self lapNumber > aState lapNumber ]
 ]
 
-{ #category : #adding }
-PlayerState >> addEffectOfCard: aCard [
-	permanentEffects add: aCard effect
+{ #category : #accessing }
+PlayerState >> cardsInHand [
+	^ cards copy
 ]
 
-{ #category : #accessing }
-PlayerState >> effects [
-	^ permanentEffects copy
+{ #category : #validation }
+PlayerState >> checkAvailabilityOf: aCard [
+	self
+		assert: (cards includes: aCard)
+		description: 'That card is not in the hand of the player'
+]
+
+{ #category : #comparing }
+PlayerState >> hash [
+	^ (self spotNumber asString , self lapNumber asString
+		, self roundNumber asString , self cardsInHand asString) hash
+]
+
+{ #category : #initialization }
+PlayerState >> initializeOn: currentPosition and: currentRoundNumber holding: heldCards [
+	position := currentPosition.
+	roundNumber := currentRoundNumber.
+	cards := heldCards
 ]
 
 { #category : #accessing }
 PlayerState >> lapNumber [
-	^ lapNumber copy
-]
-
-{ #category : #initialization }
-PlayerState >> on: currentPosition and: currentLapNumber under: playerEffects [
-	position := currentPosition copy.
-	lapNumber := currentLapNumber copy.
-	permanentEffects := playerEffects
+	^ position lapNumber
 ]
 
 { #category : #accessing }
@@ -60,7 +78,12 @@ PlayerState >> position [
 	^ position copy
 ]
 
-{ #category : #removing }
-PlayerState >> removeEffectOfCard: aCard [
-	permanentEffects remove: aCard effect
+{ #category : #accessing }
+PlayerState >> roundNumber [
+	^ roundNumber
+]
+
+{ #category : #accessing }
+PlayerState >> spotNumber [
+	^ position spotNumber
 ]

@@ -12,21 +12,44 @@ Class {
 }
 
 { #category : #'instance creation' }
-SequentialDice class >> withSequence: sequence [
+SequentialDice class >> newWithSequence: sequence [
 	self
-		assert: [ sequence isNotEmpty ]
+		assert: sequence isNotEmpty
 		description: 'Tried to create a sequence dice with an empty sequence'.
-	^ self new withSequence: sequence
+	^ self new initializeWithSequence: sequence
+]
+
+{ #category : #validation }
+SequentialDice >> checkIfSizeOfSequenceAllowsForRemovalOfAnElement [
+	self assert: rollingSequence size > 1 description: 'The last element of a sequence cannot be removed'
+]
+
+{ #category : #validation }
+SequentialDice >> checkPresenceOf: element [
+	(rollingSequence includes: element)
+		ifFalse: [ AssertionFailure
+				signal: 'This element is not present in the sequence of the dice' ]
+]
+
+{ #category : #initialization }
+SequentialDice >> initializeWithSequence: sequence [
+	rollingSequence := sequence asOrderedCollection copy.
+	lastRolledIndex := sequence size - 1
+]
+
+{ #category : #updatingSequence }
+SequentialDice >> removeFromSequence: element [
+	self checkPresenceOf: element.
+	self checkIfSizeOfSequenceAllowsForRemovalOfAnElement.
+	(rollingSequence indexOf: element) <= lastRolledIndex
+		ifTrue: [ lastRolledIndex := lastRolledIndex - 1 ].
+	rollingSequence remove: element.
+	lastRolledIndex = -1
+		ifTrue: [ lastRolledIndex := rollingSequence size - 1 ]
 ]
 
 { #category : #roll }
 SequentialDice >> roll [
 	lastRolledIndex := (lastRolledIndex + 1) % rollingSequence size.
 	^ rollingSequence at: lastRolledIndex + 1
-]
-
-{ #category : #initialization }
-SequentialDice >> withSequence: sequence [
-	rollingSequence := sequence copy.
-	lastRolledIndex := sequence size - 1
 ]

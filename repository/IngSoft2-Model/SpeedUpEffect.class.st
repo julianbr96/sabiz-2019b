@@ -7,13 +7,9 @@ Class {
 	#category : #'IngSoft2-Model'
 }
 
-{ #category : #effect }
-SpeedUpEffect >> applyOn: game triggeredBy: player in: state [
-	| newState |
-	newState := game
-		nextStateFor: state
-		afterMoving: self numberOfSpotsToGoForward.
-	game updateStateFor: player with: newState
+{ #category : #standardValues }
+SpeedUpEffect >> applyOn: game triggeredBy: player [
+	game displace: player by: self numberOfSpotsToGoForward
 ]
 
 { #category : #standardValues }

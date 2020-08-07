@@ -18,9 +18,9 @@ StandardModelTest >> setUp [
 	"Hooks that subclasses may override to define the fixture of test."
 	super setUp.
 	testResource := StandardModelTestResource new.
-	player1 := Player named: #Player1.
-	player2 := Player named: #Player2.
-	player3 := Player named: #Player3
+	player1 := Player newNamed: #Player1.
+	player2 := Player newNamed: #Player2.
+	player3 := Player newNamed: #Player3
 ]
 
 { #category : #asserting }

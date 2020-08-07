@@ -12,28 +12,28 @@ StandardModelTestResource >> effectTestingBoardWithSpots: spotsNumber and: effec
 	| spots |
 	spots := OrderedCollection
 		new: spotsNumber
-		withAll: (Spot with: NullEffect new).
-	spots at: spotNumber put: (Spot with: effect).
-	^ Board with: spots andLaps: self standardNumberOfLaps
+		withAll: (Spot newWith: NullEffect new).
+	spots at: spotNumber put: (Spot newWith: effect).
+	^ Board newWith: spots andLaps: self standardNumberOfLaps
 ]
 
 { #category : #boardCreation }
 StandardModelTestResource >> effectlessBoardWithSpots: spotsNumber [
 	^ Board
-		with:
+		newWith:
 			(OrderedCollection
 				new: spotsNumber
-				withAll: (Spot with: NullEffect new))
+				withAll: (Spot newWith: NullEffect new))
 		andLaps: self standardNumberOfLaps - 1
 ]
 
 { #category : #gameCreation }
 StandardModelTestResource >> simplisticTestingGame [
 	^ Game
-		playedBy: {Player named: #Player1 . Player named: #Player2}
-		throwing: { SequentialDice withSequence: { 4 } }
+		newPlayedBy: {Player newNamed: #Player1 . Player newNamed: #Player2}
+		throwing: { SequentialDice newWithSequence: { 4 } }
 		on: (self effectlessBoardWithSpots: 10)
-		using: (GimmickDeck withSequence: {Card with: AccelerationEffect new})
+		using: (GimmickDeck newWithSequence: {Card newWith: AccelerationEffect new})
 ]
 
 { #category : #boardCreation }
@@ -43,7 +43,7 @@ StandardModelTestResource >> standardBoard [
 
 { #category : #boardCreation }
 StandardModelTestResource >> standardBoardWithSpots: spots [
-	^ Board with: self standardEffectDistribution andSpots: spots andLaps: self standardNumberOfLaps
+	^ Board newWith: self standardEffectDistribution andSpots: spots andLaps: self standardNumberOfLaps
 ]
 
 { #category : #standardValues }
@@ -54,13 +54,13 @@ StandardModelTestResource >> standardDeckOfCards [
 		addAll: (CardInstantEffect subclasses collect: [ :each | each new ]).
 	cardTypes
 		addAll: (CardPermanentEffect subclasses collect: [ :each | each new ]).
-	^ Deck with: cardTypes asArray
+	^ Deck newWith: cardTypes asArray
 ]
 
 { #category : #standardValues }
 StandardModelTestResource >> standardEffectDistribution [
 	^ OverallOccurrenceDistribution
-		with:
+		newWith:
 			{(IndividualOccurrenceProbability
 				of: AtomicBombEffect new
 				withProbability: 2).
@@ -87,7 +87,7 @@ StandardModelTestResource >> standardEffectDistribution [
 { #category : #gameCreation }
 StandardModelTestResource >> standardGame [
 	^ Game
-		playedBy: self standardSetOfPlayers
+		newPlayedBy: self standardSetOfPlayers
 		throwing: self standardSetOfDices
 		on: self standardBoard
 		using: self standardDeckOfCards
@@ -105,12 +105,12 @@ StandardModelTestResource >> standardNumberOfSpots [
 
 { #category : #standardValues }
 StandardModelTestResource >> standardSetOfDices [
-	^ {(RandomDice withFaces: 6)}
+	^ {(RandomDice newWithFaces: 6)}
 ]
 
 { #category : #standardValues }
 StandardModelTestResource >> standardSetOfPlayers [
-	^ {(Player named: #Player1).
-	(Player named: #Player2).
-	(Player named: #Player3)}
+	^ {(Player newNamed: #Player1).
+	(Player newNamed: #Player2).
+	(Player newNamed: #Player3)}
 ]
