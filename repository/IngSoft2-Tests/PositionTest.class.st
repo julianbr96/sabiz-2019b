@@ -10,11 +10,11 @@ Class {
 { #category : #tests }
 PositionTest >> testCantCreateAPositionWithAnInvalidSpotNumber [
 	self
-		should: [ Position on: 0 and: 1 ]
+		should: [ Position newOn: 0 and: 1 ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'The spot number must be a positive integer'.
 	self
-		should: [ Position on: -1 and: 1 ]
+		should: [ Position newOn: -1 and: 1 ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'The spot number must be a positive integer'
 ]
@@ -22,13 +22,13 @@ PositionTest >> testCantCreateAPositionWithAnInvalidSpotNumber [
 { #category : #tests }
 PositionTest >> testPositionHasGivenLapNumber [
 	| position |
-	position := Position on: 5 and: 2.
+	position := Position newOn: 5 and: 2.
 	self assert: position lapNumber equals: 2
 ]
 
 { #category : #tests }
 PositionTest >> testPositionHasGivenSpotNumber [
 	| position |
-	position := Position on: 5 and: 2.
+	position := Position newOn: 5 and: 2.
 	self assert: position spotNumber equals: 5
 ]

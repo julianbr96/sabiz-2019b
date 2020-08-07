@@ -20,7 +20,7 @@ MoonWalkEffect class >> goingBack: numberOfSpotsToGoBack [
 	self
 		assert: numberOfSpotsToGoBack > 0
 		description: 'Number Of Spots to Go back must be greater than zero'.
-	^ self new initializeWith: numberOfSpotsToGoBack
+	^ super new initializeWith: numberOfSpotsToGoBack
 ]
 
 { #category : #'instance creation' }

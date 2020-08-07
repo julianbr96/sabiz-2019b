@@ -16,7 +16,7 @@ BoardTest >> allSpotTypes [
 { #category : #'test - accessing' }
 BoardTest >> testBoardHasGivenNumberOfLaps [
 	| board |
-	board := Board with: { Spot newWith: NullEffect new } andLaps: 2.
+	board := Board newWith: { Spot newWith: NullEffect new } andLaps: 2.
 	self assert: board numberOfLaps equals: 2
 ]
 
@@ -30,7 +30,7 @@ BoardTest >> testBoardHasGivenNumberOfSpots [
 { #category : #'test - instance creation' }
 BoardTest >> testCreatingACustomBoardRequiresCollectionOfSpotsToUse [
 	self
-		should: [ Board with: {} andLaps: 2]
+		should: [ Board newWith: {} andLaps: 2]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Invalid number of spots'
 ]
@@ -39,7 +39,7 @@ BoardTest >> testCreatingACustomBoardRequiresCollectionOfSpotsToUse [
 BoardTest >> testCustomBoardHasGivenEffectsInTheCorrespondingPosition [
 	| board spots |
 	spots := self allSpotTypes.
-	board := Board with: spots andLaps: 2.
+	board := Board newWith: spots andLaps: 2.
 	spots
 		withIndexDo: [ :spot :index | self assert: (board effectAt: index) equals: spot effect ]
 ]
@@ -61,10 +61,10 @@ BoardTest >> testEffectTestingBoardHasGivenEffectAtDesiredPositionAndNoEffectsEl
 { #category : #'test - instance creation' }
 BoardTest >> testProhibitsCreatingBoardWithInvalidNumberOfLaps [
 	self
-		should: [ Board with: {(Spot newWith: NullEffect new)} andLaps: 0 ]
+		should: [ Board newWith: {(Spot newWith: NullEffect new)} andLaps: 0 ]
 		raise: AssertionFailure	
 		whoseDescriptionIncludes: 'Invalid number of laps';
-		should: [ Board with: {(Spot newWith: NullEffect new)} andLaps: -1 ]
+		should: [ Board newWith: {(Spot newWith: NullEffect new)} andLaps: -1 ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Invalid number of laps'
 ]

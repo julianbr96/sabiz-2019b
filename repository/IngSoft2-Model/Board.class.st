@@ -34,7 +34,7 @@ Board class >> newWith: effectDistribution andSpots: spotsAmount andLaps: laps [
 	spots := OrderedCollection new.
 	spotsAmount
 		timesRepeat: [ spots add: (Spot newWith: effectDistribution random) ].
-	^ Board newWith: spots andLaps: laps
+	^ self newWith: spots andLaps: laps
 ]
 
 { #category : #accessing }

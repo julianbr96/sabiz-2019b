@@ -36,13 +36,6 @@ PlayerState >> = aPlayerState [
 						and: self cardsInHand = aPlayerState cardsInHand) ]
 ]
 
-{ #category : #comparing }
-PlayerState >> > aState [
-	self lapNumber == aState lapNumber
-		ifTrue: [ ^ self position > aState position ]
-		ifFalse: [ ^ self lapNumber > aState lapNumber ]
-]
-
 { #category : #accessing }
 PlayerState >> cardsInHand [
 	^ cards copy

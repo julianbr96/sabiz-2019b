@@ -11,8 +11,8 @@ Class {
 PlayerTest >> testCantPlayACardThatIsNotInTheHand [
 	| game cardToPlay |
 	game := Game
-		playedBy: {player1. player2}
-		throwing: {(RandomDice withFaces: 6)}
+		newPlayedBy: {player1. player2}
+		throwing: {(RandomDice newWithFaces: 6)}
 		on: (testResource effectlessBoardWithSpots: 10)
 		using: (Deck newWith: {RepeatEffect new}).
 	cardToPlay := Card newWith: OverloadEffect new.
@@ -26,10 +26,10 @@ PlayerTest >> testCantPlayACardThatIsNotInTheHand [
 PlayerTest >> testCardsInHandOfReturnsEmptyColectionIfThePlayerHasNoCards [
 	| game |
 	game := Game
-		playedBy: {player1. player2}
-		throwing: {SequentialDice withSequence: {10. 1}}
+		newPlayedBy: {player1. player2}
+		throwing: {SequentialDice newWithSequence: {10. 1}}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck withSequence: {Card newWith: AccelerationEffect new}).
+		using: (GimmickDeck newWithSequence: {Card newWith: AccelerationEffect new}).
 	game play: (Card newWith: AccelerationEffect new) for: player1 on: game players.
 	game play: (Card newWith: AccelerationEffect new) for: player1 on: game players.
 	self assert: (game cardsInHandOf: player1) asArray equals: {  }
@@ -39,10 +39,10 @@ PlayerTest >> testCardsInHandOfReturnsEmptyColectionIfThePlayerHasNoCards [
 PlayerTest >> testPlayerThatFinishedCantPlayACard [
 	| game card |
 	game := Game
-		playedBy: {player1. player2}
-		throwing: {SequentialDice withSequence: {10. 1}}
+		newPlayedBy: {player1. player2}
+		throwing: {SequentialDice newWithSequence: {10. 1}}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck withSequence: {Card newWith: RepeatEffect new}).
+		using: (GimmickDeck newWithSequence: {Card newWith: RepeatEffect new}).
 	game throwDicesFor: player1.
 	game throwDicesFor: player2.
 	card := (game cardsInHandOf: player1) first.
@@ -56,8 +56,8 @@ PlayerTest >> testPlayerThatFinishedCantPlayACard [
 PlayerTest >> testPlayingACardRemovesItFromHand [
 	| game cardToPlay |
 	game := Game
-		playedBy: {player1. player2}
-		throwing: {(RandomDice withFaces: 6)}
+		newPlayedBy: {player1. player2}
+		throwing: {(RandomDice newWithFaces: 6)}
 		on: (testResource effectlessBoardWithSpots: 10)
 		using: (Deck newWith: {AccelerationEffect new}).
 	cardToPlay := (game cardsInHandOf: player1) first.
@@ -66,11 +66,20 @@ PlayerTest >> testPlayingACardRemovesItFromHand [
 ]
 
 { #category : #tests }
+PlayerTest >> testTwoIdenticalPlayerStatesYieldSameHash [
+	| state1 state2 |
+	state1 := PlayerState on: 1 andLap: 1 holding: {  }.
+	state2 := PlayerState on: 1 andLap: 1 holding: {  }.
+	self assert: state1 equals: state2.
+	self assert: state1 hash equals: state2 hash
+]
+
+{ #category : #tests }
 PlayerTest >> testTwoPlayersWithTheDifferentNamesAreTheDifferentPlayers [
-	self deny: (Player named: #player1) equals: (Player named: #player2)
+	self deny: (Player newNamed: #player1) equals: (Player newNamed: #player2)
 ]
 
 { #category : #tests }
 PlayerTest >> testTwoPlayersWithTheSameNameAreTheSamePlayer [
-	self assert: (Player named: #player1) equals: (Player named: #player1)
+	self assert: (Player newNamed: #player1) equals: (Player newNamed: #player1)
 ]

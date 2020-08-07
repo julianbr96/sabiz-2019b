@@ -10,7 +10,7 @@ Class {
 { #category : #'test - sequentialDice' }
 DiceTest >> testCantCreateSequentialDiceWithEmptySequence [
 	self
-		should: [ SequentialDice withSequence: {} ]
+		should: [ SequentialDice newWithSequence: {} ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Tried to create a sequence dice with an empty sequence'
 ]
@@ -18,7 +18,7 @@ DiceTest >> testCantCreateSequentialDiceWithEmptySequence [
 { #category : #'test - sequentialDice' }
 DiceTest >> testCantRemoveLastElementFromSequentialDice [
 	| dice |
-	dice := SequentialDice withSequence: {1 . 2 . 3}.
+	dice := SequentialDice newWithSequence: {1 . 2 . 3}.
 	dice removeFromSequence: 1.
 	dice removeFromSequence: 2.
 	self
@@ -30,7 +30,7 @@ DiceTest >> testCantRemoveLastElementFromSequentialDice [
 { #category : #'test - sequentialDice' }
 DiceTest >> testCantRemoveUnexistingElementFromSequentialDice [
 	| dice |
-	dice := SequentialDice withSequence: {1 . 2}.
+	dice := SequentialDice newWithSequence: {1 . 2}.
 	dice removeFromSequence: 1.
 	self
 		should: [ dice removeFromSequence: 1 ]
@@ -41,7 +41,7 @@ DiceTest >> testCantRemoveUnexistingElementFromSequentialDice [
 { #category : #'test - randomDice' }
 DiceTest >> testRandomDiceCreationFailsWhenGivenNumberOfFacesIsLessThanFour [
 	self
-		should: [ RandomDice withFaces: 2 ]
+		should: [ RandomDice newWithFaces: 2 ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Number of Faces should be greater than three'
 ]
@@ -50,7 +50,7 @@ DiceTest >> testRandomDiceCreationFailsWhenGivenNumberOfFacesIsLessThanFour [
 DiceTest >> testRandomDiceRollsValidNumber [
 	| dice faces result |
 	faces := 6.
-	dice := RandomDice withFaces: faces.
+	dice := RandomDice newWithFaces: faces.
 	result := dice roll.
 	self assert: (result > 0 and: result <= faces)
 ]
@@ -59,7 +59,7 @@ DiceTest >> testRandomDiceRollsValidNumber [
 DiceTest >> testRemovingElementFromSequentialDiceYieldsExpectedSequence [
 	| list  dice |
 	list := OrderedCollection new.
-	dice := SequentialDice withSequence: { 1. 2. 3 }.
+	dice := SequentialDice newWithSequence: { 1. 2. 3 }.
 	list add: dice roll.
 	list add: dice roll.
 	list add: dice roll.
@@ -73,7 +73,7 @@ DiceTest >> testRemovingElementFromSequentialDiceYieldsExpectedSequence [
 DiceTest >> testSequentialDiceRollsExpectedSequence [
 	| dice rolledSequence |
 	rolledSequence := OrderedCollection new.
-	dice := SequentialDice withSequence: {1 . 2 . 3}.
+	dice := SequentialDice newWithSequence: {1 . 2 . 3}.
 	4 timesRepeat: [ rolledSequence add: dice roll ].
 	self assert: rolledSequence asArray equals: {1 . 2 . 3 . 1}
 ]
@@ -82,7 +82,7 @@ DiceTest >> testSequentialDiceRollsExpectedSequence [
 DiceTest >> testSequentialDiceRollsExpectedSequenceAfterRemovingElement [
 	| dice rolledSequence |
 	rolledSequence := OrderedCollection new.
-	dice := SequentialDice withSequence: {1 . 2 . 3}.
+	dice := SequentialDice newWithSequence: {1 . 2 . 3}.
 	3 timesRepeat: [rolledSequence add: dice roll].
 	dice removeFromSequence: 1.
 	rolledSequence add: dice roll.
