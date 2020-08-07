@@ -7,7 +7,7 @@ Class {
 	#category : #'IngSoft2-Tests'
 }
 
-{ #category : #extracted }
+{ #category : #'test -  support' }
 BoardTest >> allSpotTypes [
 	^ (SpotEffect allSubclasses collect: [ :each | Spot with: each new ])
 		asArray
@@ -16,27 +16,35 @@ BoardTest >> allSpotTypes [
 { #category : #'test - accessing' }
 BoardTest >> testBoardHasGivenNumberOfLaps [
 	| board |
-	board := Board newWith: 10 and: 2.
-	self assert: [ board numberOfLaps = 2 ]
+	board := Board with: { Spot with: NullEffect new } andLaps: 2.
+	self assert: board numberOfLaps equals: 2
 ]
 
 { #category : #'test - accessing' }
 BoardTest >> testBoardHasGivenNumberOfSpots [
 	| board |
-	board := Board newWith: 20 and: 2.
-	self assert: [ board numberOfSpots = 20 ]
+	board := testResource standardBoardWithSpots: 20.
+	self assert: board numberOfSpots equals: 20
 ]
 
-{ #category : #tests }
-BoardTest >> testCustomBoardHasParticularEffectAtGivenPosition [
+{ #category : #'test - instance creation' }
+BoardTest >> testCreatingACustomBoardRequiresCollectionOfSpotsToUse [
+	self
+		should: [ Board with: {} andLaps: 2]
+		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Invalid number of spots'
+]
+
+{ #category : #'test - accessing' }
+BoardTest >> testCustomBoardHasGivenEffectsInTheCorrespondingPosition [
 	| board spots |
 	spots := self allSpotTypes.
-	board := Board new initializeWith: spots andLaps: 5.
+	board := Board with: spots andLaps: 2.
 	spots
-		withIndexDo: [ :spot :index | self assert: (board spotAt: index) equals: spot ]
+		withIndexDo: [ :spot :index | self assert: (board effectAt: index) equals: spot effect ]
 ]
 
-{ #category : #tests }
+{ #category : #'test - accessing' }
 BoardTest >> testEffectTestingBoardHasGivenEffectAtDesiredPositionAndNoEffectsElsewhere [
 	| effect board |
 	effect := MoonWalkEffect new.
@@ -46,20 +54,28 @@ BoardTest >> testEffectTestingBoardHasGivenEffectAtDesiredPositionAndNoEffectsEl
 		at: 1.
 	1 to: board numberOfSpots do: [ :index | 
 		index == 1
-			ifTrue: [ self assert: (board spotAt: index) effect equals: effect ]
-			ifFalse: [ self assert: (board spotAt: index) effect class equals: NullEffect ] ]
+			ifTrue: [ self assert: (board effectAt: index) equals: effect ]
+			ifFalse: [ self assert: (board effectAt: index) class equals: NullEffect ] ]
 ]
 
-{ #category : #tests }
+{ #category : #'test - instance creation' }
 BoardTest >> testProhibitsCreatingBoardWithInvalidNumberOfLaps [
 	self
-		should: [ Board newWith: 10 and: 0 ] raise: AssertionFailure;
-		should: [ Board newWith: 10 and: -1 ] raise: AssertionFailure
+		should: [ Board with: {(Spot with: NullEffect new)} andLaps: 0 ]
+		raise: AssertionFailure	
+		whoseDescriptionIncludes: 'Invalid number of laps';
+		should: [ Board with: {(Spot with: NullEffect new)} andLaps: -1 ]
+		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Invalid number of laps'
 ]
 
-{ #category : #tests }
+{ #category : #'test - instance creation' }
 BoardTest >> testProhibitsCreatingBoardWithInvalidNumberOfSpots [
 	self
-		should: [ Board newWith: 0 and: 2 ] raise: AssertionFailure;
-		should: [ Board newWith: -1 and: 2 ] raise: AssertionFailure
+		should: [ testResource standardBoardWithSpots: 0 ]
+		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Invalid number of spots';
+		should: [ testResource standardBoardWithSpots: -1 ]
+		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Invalid number of spots'
 ]

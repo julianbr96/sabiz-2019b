@@ -8,26 +8,48 @@ Class {
 }
 
 { #category : #tests }
-PlayerTest >> testAllPlayerReceivesTwoCardsAsSoonAsHeEntersTheGame [
-	| game |
-	game := testResource standardGame.
-	game players
-		do: [ :each | self assert: each cardsInHand size equals: 2 ]
-]
-
-{ #category : #tests }
 PlayerTest >> testCantPlayACardThatIsNotInTheHand [
 	| game cardToPlay |
 	game := Game
 		playedBy: {player1. player2}
 		throwing: {(RandomDice withFaces: 6)}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: (Deck with: {RepeatEffect new}).
-	cardToPlay := Card with: AccelerationEffect new.
+	cardToPlay := Card with: OverloadEffect new.
 	self
-		should:
-			[ game nextTurnPlaying: cardToPlay affecting: player2 ]
+		should: [ game play: cardToPlay for: player1 on: player2 ]
 		raise: AssertionFailure
+		whoseDescriptionIncludes: 'That card is not in the hand of the player'
+]
+
+{ #category : #tests }
+PlayerTest >> testCardsInHandOfReturnsEmptyColectionIfThePlayerHasNoCards [
+	| game |
+	game := Game
+		playedBy: {player1. player2}
+		throwing: {SequentialDice withSequence: {10. 1}}
+		on: (testResource effectlessBoardWithSpots: 10)
+		using: (GimmickDeck withSequence: {Card with: AccelerationEffect new}).
+	game play: (Card with: AccelerationEffect new) for: player1 on: game players.
+	game play: (Card with: AccelerationEffect new) for: player1 on: game players.
+	self assert: (game cardsInHandOf: player1) asArray equals: {  }
+]
+
+{ #category : #tests }
+PlayerTest >> testPlayerThatFinishedCantPlayACard [
+	| game card |
+	game := Game
+		playedBy: {player1. player2}
+		throwing: {SequentialDice withSequence: {10. 1}}
+		on: (testResource effectlessBoardWithSpots: 10)
+		using: (GimmickDeck withSequence: {Card with: RepeatEffect new}).
+	game throwDicesFor: player1.
+	game throwDicesFor: player2.
+	card := (game cardsInHandOf: player1) first.
+	self
+		should: [ game play: card for: player1 on: {player2} ]
+		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Trying to play a card for a player that has already finished'
 ]
 
 { #category : #tests }
@@ -36,13 +58,11 @@ PlayerTest >> testPlayingACardRemovesItFromHand [
 	game := Game
 		playedBy: {player1. player2}
 		throwing: {(RandomDice withFaces: 6)}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: (Deck with: {AccelerationEffect new}).
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game nextTurnPlaying: cardToPlay affecting: player2.
-	self
-		assert: (game cardsInHandOf: player1) size
-		equals: 1
+	game play: cardToPlay for: player1 on: game players. 
+	self assert: (game cardsInHandOf: player1) size equals: 1
 ]
 
 { #category : #tests }

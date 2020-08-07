@@ -11,7 +11,7 @@ Class {
 GameTest >> testAllPlayersStartAtFirstSpot [
 	| game |
 	game := Game
-		playedBy: {player1. player2}
+		playedBy:	 {player1. player2}
 		throwing: {(RandomDice withFaces: 6)}
 		on: testResource standardBoard
 		using: testResource standardDeckOfCards.
@@ -45,21 +45,7 @@ GameTest >> testCantCheckThePositionOfAPlayerThatIsNotInTheGame [
 	self
 		should: [ testResource standardGame positionOf: (Player named: #PlayerFromAnotherGame) ]
 		raise: AssertionFailure
-]
-
-{ #category : #'tests - instance creation' }
-GameTest >> testCantCreateGameWithPlayersAlreadyHoldingCards [
-	| player cards |
-	player := Player named: #player.
-	cards := player cardsInHand.
-	cards add: (Card with: AccelerationEffect new).
-	self
-		should: [ Game
-				playedBy: {player}
-				throwing: testResource standardSetOfDices
-				on: testResource standardBoard
-				using: testResource standardDeckOfCards ]
-		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Asked for a player that is not in the game'
 ]
 
 { #category : #'tests - instance creation' }
@@ -71,6 +57,7 @@ GameTest >> testCantCreateGameWithoutDices [
 				on: testResource standardBoard
 				using: testResource standardDeckOfCards ]
 		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Tried to create a game with an invalid set of Dices'
 ]
 
 { #category : #'tests - instance creation' }
@@ -82,6 +69,7 @@ GameTest >> testCantCreateGameWithoutPlayers [
 				on: testResource standardBoard
 				using: testResource standardDeckOfCards ]
 		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Cant create a game with no players'
 ]
 
 { #category : #'tests - instance creation' }
@@ -93,14 +81,30 @@ GameTest >> testCantHaveDupplicatedPlayers [
 				on: testResource standardBoard
 				using: testResource standardDeckOfCards ]
 		raise: AssertionFailure
+		whoseDescriptionIncludes: 'The player set contains a duplicate'
 ]
 
 { #category : #'test - playing' }
 GameTest >> testCantPlayMoreRoundsOnceGameIsOver [
 	| game |
 	game := testResource standardGame.
-	game playAnEntireGame.
-	self should: [ game playOneRound ] raise: AssertionFailure
+	game playAnEntireGameWithoutPlayingCards.
+	self
+		should: [ game playOneRoundWithoutPlayingCards ]
+		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Game is already over'
+]
+
+{ #category : #'test - accessing' }
+GameTest >> testGameHasGivenDeckOfCards [
+	| game deck |
+	deck := testResource standardDeckOfCards.
+	game := Game
+		playedBy: testResource standardSetOfPlayers
+		throwing: testResource standardSetOfDices
+		on: (testResource effectlessBoardWithSpots: 10)
+		using: deck.
+	self assert: game deck equals: deck
 ]
 
 { #category : #'test - accessing' }
@@ -122,7 +126,7 @@ GameTest >> testGameHasGivenPlayer [
 		throwing: {(RandomDice withFaces: 6)}
 		on: testResource standardBoard
 		using: testResource standardDeckOfCards.
-	self assert: [ game isPlayedBy: player1 ]
+	self assert: (game isPlayedBy: player1)
 ]
 
 { #category : #'test - accessing' }
@@ -135,16 +139,20 @@ GameTest >> testGameHasGivenSetOfDices [
 		throwing: {dice1. dice2}
 		on: testResource standardBoard
 		using: testResource standardDeckOfCards.
-	self
-		assert: [ game dices includesAll: {dice1. dice2} ]
+	self assert: (game dices includesAll: {dice1. dice2})
 ]
 
 { #category : #'tests - game state' }
-GameTest >> testGameIsOver [
+GameTest >> testGameShowsCorrectPlayersThatAreStillPlayingAfterSomeoneFinishes [
 	| game |
-	game := testResource standardGame.
-	game playAnEntireGame.
-	self deny: [ game isNotOver ]
+	game := Game
+		playedBy: {player1. player2}
+		throwing: {(SequentialDice withSequence: {10})}
+		on: (testResource effectlessBoardWithSpots: 10)
+		using: testResource standardDeckOfCards.
+	self assert: game players equals: game playersStillPlaying.
+	game throwDicesFor: player1.
+	self assert: game playersStillPlaying equals: { player2 }
 ]
 
 { #category : #'test - playing' }
@@ -152,24 +160,47 @@ GameTest >> testGoingBackToLastSpotDecreasesTheCorrectNumberOfLapsOfAPlayer [
 	| game |
 	game := Game
 		playedBy: {player1}
-		throwing: {(SequentialDice withSequence: {3. -4})}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		throwing: {(SequentialDice withSequence: {3 . -4})}
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: testResource standardDeckOfCards.
-	game playOneRound.
-	game playOneRound.
+	game playOneRoundWithoutPlayingCards.
+	game playOneRoundWithoutPlayingCards.
 	self assert: (game lapOf: player1) equals: -1
 ]
 
-{ #category : #'tests - game state' }
+{ #category : #'test - playing' }
 GameTest >> testOngoingGameShowsExpectedPlayerPlacesAfterOneRound [
 	| game |
 	game := Game
 		playedBy: {player1. player2. player3}
-		throwing: {(SequentialDice withSequence: {3. 4. 11})}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		throwing: {(SequentialDice withSequence: {3 . 4 . 11})}
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: testResource standardDeckOfCards.
-	game playOneRound.
-	self assert: game currentRanking equals: {player3. player2. player1}
+	game playOneRoundWithoutPlayingCards.
+	self
+		assert: game currentRanking
+		equals: {player3. player2. player1}
+]
+
+{ #category : #'test - playing' }
+GameTest >> testPlayerCantPlayUnlessItsHisTurn [
+	| game |
+	game := Game
+		playedBy: {player1. player2}
+		throwing: {(RandomDice withFaces: 6)}
+		on: (testResource effectlessBoardWithSpots: 20)
+		using: testResource standardDeckOfCards.
+	self assert: game playerWhoseTurnItIsToPlay equals: player1.
+	game throwDicesFor: player1.
+	self assert: game playerWhoseTurnItIsToPlay equals: player2.
+	game throwDicesFor: player2.
+	self assert: game playerWhoseTurnItIsToPlay equals: player1.
+	game throwDicesFor: player1.
+	self assert: game playerWhoseTurnItIsToPlay equals: player2.
+	self
+		should: [ game throwDicesFor: player1 ]
+		raise: AssertionFailure
+		whoseDescriptionIncludes: 'Trying to move a player out of turn'
 ]
 
 { #category : #'test - playing' }
@@ -177,11 +208,11 @@ GameTest >> testPlayerCompletesALapAfterGoingOverTheLastSpot [
 	| game |
 	game := Game
 		playedBy: {player1}
-		throwing: {(SequentialDice withSequence: {7. 4})}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		throwing: {(SequentialDice withSequence: {7 . 4})}
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: testResource standardDeckOfCards.
-	game playOneRound.
-	game playOneRound.
+	game playOneRoundWithoutPlayingCards.
+	game playOneRoundWithoutPlayingCards.
 	self assert: (game lapOf: player1) equals: 1
 ]
 
@@ -191,10 +222,28 @@ GameTest >> testPlayerOneWonTheGame [
 	game := Game
 		playedBy: {player1. player2}
 		throwing: {(SequentialDice withSequence: {10})}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 1)
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: testResource standardDeckOfCards.
-	game playAnEntireGame.
+	game playAnEntireGameWithoutPlayingCards.
 	self assert: game winner equals: player1
+]
+
+{ #category : #'test - playing' }
+GameTest >> testPlayersThatFinishedAreNoLongerInTurnWheel [
+	| game board |
+	board := testResource effectlessBoardWithSpots: 10.
+	game := Game
+		playedBy: {player1. player2}
+		throwing: {(SequentialDice withSequence: {10. 1})}
+		on: board
+		using: testResource standardDeckOfCards.
+	self assert: game playerWhoseTurnItIsToPlay equals: player1.
+	game throwDicesFor: player1.
+	self assert: game playerWhoseTurnItIsToPlay equals: player2.
+	game throwDicesFor: player2.
+	self assert: game playerWhoseTurnItIsToPlay equals: player2.
+	game throwDicesFor: player2.
+	self assert: game playerWhoseTurnItIsToPlay equals: nil.
 ]
 
 { #category : #'test - playing' }
@@ -202,13 +251,13 @@ GameTest >> testPositionOfPlayerIsCorrectAfterCompletingAndLosingALap [
 	| game |
 	game := Game
 		playedBy: {player1}
-		throwing: {(SequentialDice withSequence: {-4. 4})}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		throwing: {(SequentialDice withSequence: {-4 . 4})}
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: testResource standardDeckOfCards.
-	game playOneRound.
+	game playOneRoundWithoutPlayingCards.
 	self assert: (game positionOf: player1) equals: 7.
-	game playOneRound.
-	self assert: (game positionOf: player1) equals: 1 
+	game playOneRoundWithoutPlayingCards.
+	self assert: (game positionOf: player1) equals: 1
 ]
 
 { #category : #'test - playing' }
@@ -217,11 +266,11 @@ GameTest >> testPositionOfPlayerIsCorrectAfterLosingAndCompletingALap [
 	game := Game
 		playedBy: {player1}
 		throwing: {(SequentialDice withSequence: {-4 . 4})}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: testResource standardDeckOfCards.
-	game playOneRound.
+	game playOneRoundWithoutPlayingCards.
 	self assert: (game positionOf: player1) equals: 7.
-	game playOneRound.
+	game playOneRoundWithoutPlayingCards.
 	self assert: (game positionOf: player1) equals: 1
 ]
 
@@ -231,9 +280,9 @@ GameTest >> testReachingLastSpotWithoutRoundingTheBoardDoesNotIncrementLapNumber
 	game := Game
 		playedBy: {player1}
 		throwing: {(SequentialDice withSequence: {9})}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: testResource standardDeckOfCards.
-	game playOneRound.
+	game playOneRoundWithoutPlayingCards.
 	self assert: (game lapOf: player1) equals: 0
 ]
 
@@ -244,8 +293,61 @@ GameTest >> testRiggedGameEndsAsExpected [
 	game := Game
 		playedBy: {player1. player2. player3}
 		throwing: {dice}
-		on: (testResource effectlessBoardWithSpots: 10 andLaps: 2)
+		on: (testResource effectlessBoardWithSpots: 10)
 		using: testResource standardDeckOfCards.
-	game playAnEntireGame.
-	self assert: game finishRanking equals: {player1. player2. player3}
+	game playAnEntireGameWithoutPlayingCards.
+	self
+		assert: game finishRanking
+		equals: {player1. player2. player3}
+]
+
+{ #category : #'tests - game state' }
+GameTest >> testRoundNumberIncreasesEveryRound [
+	| game |
+	game := Game playedBy: { player1. player2. player3 } 
+			throwing: { SequentialDice withSequence: { 1 } }
+			on: (testResource effectlessBoardWithSpots: 5)
+			using: testResource standardDeckOfCards.
+	self assert: game roundNumber equals: 1.
+	game playOneRoundWithoutPlayingCards.
+	self assert: game roundNumber equals: 2.
+	game playOneRoundWithoutPlayingCards.
+	self assert: game roundNumber equals: 3.
+	game playOneRoundWithoutPlayingCards.
+	self assert: game roundNumber equals: 4
+]
+
+{ #category : #'tests - game state' }
+GameTest >> testSimplisticGameEndsSuccessfully [
+	| game |
+	game := testResource simplisticTestingGame.
+	game playAnEntireGameWithoutPlayingCards.
+	self assert: game isOver
+]
+
+{ #category : #'test - playing' }
+GameTest >> testSimplisticGameYieldsExpectedStateList [
+	| game expectedHistory cards |
+	cards := { Card with: AccelerationEffect new. Card with: AccelerationEffect new }.
+	expectedHistory := {
+		PlayerState on: 1 and: 0 and: 0 holding: cards.
+		PlayerState on: 1 and: 0 and: 1 holding: cards.
+		PlayerState on: 5 and: 0 and: 1 holding: cards.
+		PlayerState on: 5 and: 0 and: 2 holding: cards.
+		PlayerState on: 9 and: 0 and: 2 holding: cards.
+		PlayerState on: 9 and: 0 and: 3 holding: cards.
+		PlayerState on: 3 and: 1 and: 3 holding: cards	
+	} asOrderedCollection.
+	game := testResource simplisticTestingGame.
+	game playAnEntireGameWithoutPlayingCards.
+	self assert: (game historyOf: player1) equals: expectedHistory.
+	self assert: (game historyOf: player2) equals: expectedHistory
+]
+
+{ #category : #'tests - game state' }
+GameTest >> testStandardGameEndsSuccessfully [
+	| game |
+	game := testResource standardGame.
+	game playAnEntireGameWithoutPlayingCards.
+	self assert: game isOver
 ]

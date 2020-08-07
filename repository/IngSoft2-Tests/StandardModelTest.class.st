@@ -23,18 +23,25 @@ StandardModelTest >> setUp [
 	player3 := Player named: #Player3
 ]
 
+{ #category : #asserting }
+StandardModelTest >> should: aBlock raise: anExceptionalEvent whoseDescriptionIncludes: subString [
+	self
+		should: aBlock
+		raise: anExceptionalEvent
+		description: 'The block does not raise the expected event'.
+	^ self
+		should: aBlock
+		raise: anExceptionalEvent
+		whoseDescriptionIncludes: subString
+		description: 'The description does not contain the expected substring'
+]
+
 { #category : #testResourceTests }
 StandardModelTest >> testTestResourceYieldsValidObjects [
 	self assert: testResource standardGame class equals: Game.
+	self assert: testResource simplisticTestingGame class equals: Game.
 	self assert: testResource standardBoard class equals: Board.
-	self
-		assert: (testResource effectlessBoardWithSpots: 10 andLaps: 2) class
-		equals: Board.
-	self
-		assert:
-			(testResource
-				effectTestingBoardWithSpots: 10
-				and: NullEffect new
-				at: 4) class
-		equals: Board
+	self assert: (testResource effectlessBoardWithSpots: 10) class equals: Board.
+	self assert: (testResource standardBoardWithSpots: 10) class equals: Board.
+	self assert: (testResource effectTestingBoardWithSpots: 10 and: NullEffect new at: 4) class equals: Board
 ]

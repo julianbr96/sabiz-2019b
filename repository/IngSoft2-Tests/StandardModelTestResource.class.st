@@ -14,28 +14,36 @@ StandardModelTestResource >> effectTestingBoardWithSpots: spotsNumber and: effec
 		new: spotsNumber
 		withAll: (Spot with: NullEffect new).
 	spots at: spotNumber put: (Spot with: effect).
-	^ self newBoardWithSpotCollection: spots and: 2
+	^ Board with: spots andLaps: self standardNumberOfLaps
 ]
 
 { #category : #boardCreation }
-StandardModelTestResource >> effectlessBoardWithSpots: spotsNumber andLaps: lapsNumber [
-	| spots |
-	spots := OrderedCollection
-		new: spotsNumber
-		withAll: (Spot with: NullEffect new).
-	^ self newBoardWithSpotCollection: spots and: lapsNumber
+StandardModelTestResource >> effectlessBoardWithSpots: spotsNumber [
+	^ Board
+		with:
+			(OrderedCollection
+				new: spotsNumber
+				withAll: (Spot with: NullEffect new))
+		andLaps: self standardNumberOfLaps - 1
 ]
 
-{ #category : #boardCreation }
-StandardModelTestResource >> newBoardWithSpotCollection: spots and: lapsNumber [
-	^ Board new initializeWith: spots andLaps: lapsNumber
+{ #category : #gameCreation }
+StandardModelTestResource >> simplisticTestingGame [
+	^ Game
+		playedBy: {Player named: #Player1 . Player named: #Player2}
+		throwing: { SequentialDice withSequence: { 4 } }
+		on: (self effectlessBoardWithSpots: 10)
+		using: (GimmickDeck withSequence: {Card with: AccelerationEffect new})
 ]
 
 { #category : #boardCreation }
 StandardModelTestResource >> standardBoard [
-	^ Board
-		newWith: self standardNumberOfSpots
-		and: self standardNumberOfLaps
+	^ self standardBoardWithSpots: self standardNumberOfSpots
+]
+
+{ #category : #boardCreation }
+StandardModelTestResource >> standardBoardWithSpots: spots [
+	^ Board with: self standardEffectDistribution andSpots: spots andLaps: self standardNumberOfLaps
 ]
 
 { #category : #standardValues }
@@ -49,9 +57,36 @@ StandardModelTestResource >> standardDeckOfCards [
 	^ Deck with: cardTypes asArray
 ]
 
+{ #category : #standardValues }
+StandardModelTestResource >> standardEffectDistribution [
+	^ OverallOccurrenceDistribution
+		with:
+			{(IndividualOccurrenceProbability
+				of: AtomicBombEffect new
+				withProbability: 2).
+			(IndividualOccurrenceProbability
+				of: NullEffect new
+				withProbability: 45).
+			(IndividualOccurrenceProbability
+				of: MoonWalkEffect new
+				withProbability: 5).
+			(IndividualOccurrenceProbability
+				of: SpeedUpEffect new
+				withProbability: 15).
+			(IndividualOccurrenceProbability
+				of: TimeMachineEffect new
+				withProbability: 8).
+			(IndividualOccurrenceProbability
+				of: WormHoleEffect new
+				withProbability: 15).
+			(IndividualOccurrenceProbability
+				of: CardGivingEffect new
+				withProbability: 10)}
+]
+
 { #category : #gameCreation }
 StandardModelTestResource >> standardGame [
-	^  Game
+	^ Game
 		playedBy: self standardSetOfPlayers
 		throwing: self standardSetOfDices
 		on: self standardBoard
@@ -75,7 +110,7 @@ StandardModelTestResource >> standardSetOfDices [
 
 { #category : #standardValues }
 StandardModelTestResource >> standardSetOfPlayers [
-	^ {(Player named: #player1).
-	(Player named: #player2).
-	(Player named: #player3)}
+	^ {(Player named: #Player1).
+	(Player named: #Player2).
+	(Player named: #Player3)}
 ]
