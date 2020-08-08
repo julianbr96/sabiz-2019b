@@ -2,7 +2,7 @@
 A deck that deals cards in an expected sequence
 "
 Class {
-	#name : #GimmickDeck,
+	#name : #SequentialDeck,
 	#superclass : #Deck,
 	#instVars : [
 		'dealingSequence'
@@ -11,17 +11,17 @@ Class {
 }
 
 { #category : #'instance creation' }
-GimmickDeck class >> newWithSequence: dealingSequence [
+SequentialDeck class >> newWithSequence: dealingSequence [
 	self assert: dealingSequence isNotEmpty description: 'Cant create a Gimmick Deck with an empty dealing sequence'.
 	^ self new initializeWithSequence: dealingSequence
 ]
 
 { #category : #initialization }
-GimmickDeck >> initializeWithSequence: sequence [
-	dealingSequence := SequentialDice newWithSequence: sequence
+SequentialDeck >> initializeWithSequence: sequence [
+	dealingSequence := SequentialInstrument newWithSequence: sequence
 ]
 
 { #category : #accessing }
-GimmickDeck >> nextCard [
-	^ dealingSequence roll
+SequentialDeck >> nextCard [
+	^ dealingSequence generateNext
 ]

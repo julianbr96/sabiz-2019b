@@ -12,7 +12,8 @@ Class {
 		'playedCards',
 		'deck',
 		'turnHandler',
-		'triggeredEffects'
+		'triggeredEffects',
+		'activePermanentCardEffects'
 	],
 	#category : #'IngSoft2-Model'
 }
@@ -46,6 +47,12 @@ Game class >> newPlayedBy: players throwing: dices on: aBoard using: aDeck [
 		throwing: dices
 		on: aBoard
 		using: aDeck
+]
+
+{ #category : #adding }
+Game >> addPermanentEffectCard: card to: target by: player [
+	activePermanentCardEffects
+		add: (PlayedCard newOf: card effect to: target)
 ]
 
 { #category : #'private - effects' }
@@ -115,17 +122,6 @@ Game >> displace: player by: anAmount [
 	self updateStateFor: player with: newState
 ]
 
-{ #category : #'private - effects' }
-Game >> effectsOn: player [
-	| cardsTargetingPlayer |
-	cardsTargetingPlayer := (playedCards
-		select: [ :each | each target includes: player ])
-		collect: [ :each | each effect value ].
-	cardsTargetingPlayer isNotEmpty
-		ifTrue: [ ^ cardsTargetingPlayer sum ].
-	^ 0
-]
-
 { #category : #accessingGameState }
 Game >> finishRanking [
 	^ leaderBoard finishRanking
@@ -144,6 +140,7 @@ Game >> initializeWith: gamePlayers throwing: gameDices on: aBoard using: aDeck 
 	turnHandler := TurnHandler newFor: gamePlayers.
 	dices := gameDices copy.
 	playedCards := OrderedCollection new.
+	activePermanentCardEffects := OrderedCollection new.
 	playersStates := (gamePlayers
 		collect: [ :each | 
 			Association
@@ -152,14 +149,13 @@ Game >> initializeWith: gamePlayers throwing: gameDices on: aBoard using: aDeck 
 					{(PlayerState
 						on: 1
 						andLap: 0
-						holding: {deck nextCard. deck nextCard})
-				} asOrderedCollection ]) asOrderedDictionary.
+						holding:
+							{deck nextCard.
+							deck nextCard})} asOrderedCollection ]) asOrderedDictionary.
 	triggeredEffects := (gamePlayers
-		collect: [ :each | 
-			Association
-				key: each
-				value: OrderedCollection new
-			]) asOrderedDictionary
+		collect:
+			[ :each | Association key: each value: OrderedCollection new ])
+		asOrderedDictionary
 ]
 
 { #category : #accessingGameState }
@@ -297,7 +293,7 @@ Game >> positionOf: player [
 
 { #category : #'private - effects' }
 Game >> removePlayedCard: playedCard [
-	playedCards
+	activePermanentCardEffects
 		remove: playedCard
 		ifAbsent: [ AssertionFailure
 				signal:
@@ -325,6 +321,7 @@ Game >> replayLastCardOn: target for: player [
 			'Cannot play redo card as there are no active played cards on the pile'.
 	card := Card newWith: playedCards last effect.
 	hand := self cardsInHandOf: player.
+	hand remove: (Card newWith: RedoEffect new).
 	hand add: card.
 	self
 		updateStateFor: player
@@ -366,6 +363,17 @@ Game >> roundNumber [
 	^ turnHandler currentRoundNumber
 ]
 
+{ #category : #'private - effects' }
+Game >> spotsToMoveAfterCalculatingPermanentEffectsOn: player [
+	| cardsTargetingPlayer |
+	cardsTargetingPlayer := (activePermanentCardEffects
+		select: [ :each | each target includes: player ])
+		collect: [ :each | each effect value ].
+	cardsTargetingPlayer isNotEmpty
+		ifTrue: [ ^ cardsTargetingPlayer sum ].
+	^ 0
+]
+
 { #category : #accessingPlayer }
 Game >> stateOf: player [
 	^ (playersStates
@@ -398,7 +406,7 @@ Game >> throwDicesFor: player [
 
 { #category : #'private - moving' }
 Game >> totalDisplacementFor: player [
-	^ self rollSum + (self effectsOn: player)
+	^ self rollSum + (self spotsToMoveAfterCalculatingPermanentEffectsOn: player)
 ]
 
 { #category : #'private - updating' }

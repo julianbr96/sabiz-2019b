@@ -35,7 +35,7 @@ DiceTest >> testCantRemoveUnexistingElementFromSequentialDice [
 	self
 		should: [ dice removeFromSequence: 1 ]
 		raise: AssertionFailure
-		whoseDescriptionIncludes: 'This element is not present in the sequence of the dice'
+		whoseDescriptionIncludes: 'This element is not present in the sequence'
 ]
 
 { #category : #'test - randomDice' }

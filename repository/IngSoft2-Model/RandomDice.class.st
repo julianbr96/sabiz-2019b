@@ -23,7 +23,7 @@ RandomDice >> initializeWith: numberOfFaces [
 	faces := 1 to: numberOfFaces
 ]
 
-{ #category : #rolling }
+{ #category : #roll }
 RandomDice >> roll [
 	^ faces atRandom
 ]

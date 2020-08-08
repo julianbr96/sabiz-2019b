@@ -35,7 +35,7 @@ CardTest >> testARepeatCardCantBePlayedOnAPlayerThatFinished [
 		newPlayedBy: {player1. player2}
 		throwing: {SequentialDice newWithSequence: {10}}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck newWithSequence: {Card newWith: RepeatEffect new}).
+		using: (SequentialDeck newWithSequence: {Card newWith: RepeatEffect new}).
 	game throwDicesFor: player1.
 	card := (game cardsInHandOf: player2) first.
 	self
@@ -51,7 +51,7 @@ CardTest >> testASpeedCardCantBePlayedOnAPlayerThatFinished [
 		newPlayedBy: {player1. player2}
 		throwing: {SequentialDice newWithSequence: {10}}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck newWithSequence: {Card newWith: SpeedEffect new}).
+		using: (SequentialDeck newWithSequence: {Card newWith: SpeedEffect new}).
 	game throwDicesFor: player1.
 	card := (game cardsInHandOf: player2) first.
 	self
@@ -93,7 +93,7 @@ CardTest >> testAnOverloadCardCantBePlayedOnAPlayerThatFinished [
 		newPlayedBy: {player1. player2}
 		throwing: {SequentialDice newWithSequence: {10}}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck newWithSequence: {Card newWith: OverloadEffect new}).
+		using: (SequentialDeck newWithSequence: {Card newWith: OverloadEffect new}).
 	game throwDicesFor: player1.
 	card := (game cardsInHandOf: player2) first.
 	self
@@ -105,7 +105,7 @@ CardTest >> testAnOverloadCardCantBePlayedOnAPlayerThatFinished [
 { #category : #tests }
 CardTest >> testCancellationCardAffectingAllPlayersRemovesOnlyOneGlobalEffect [
 	| game deck |
-	deck := GimmickDeck newWithSequence:
+	deck := SequentialDeck newWithSequence:
 			{(Card newWith: AccelerationEffect new).
 			(Card newWith: CancellationEffect new)}.
 	game := self newCardTestingGameWith: deck.
@@ -123,7 +123,7 @@ CardTest >> testCancellationCardAffectingAllPlayersRemovesOnlyOneGlobalEffect [
 { #category : #tests }
 CardTest >> testCancellationCardAffectingOnePlayersRemovesOnlyOneOfHisLocalEffects [
 	| game deck |
-	deck := (GimmickDeck newWithSequence:
+	deck := (SequentialDeck newWithSequence:
 			{(Card newWith: SpeedEffect new).
 			(Card newWith: CancellationEffect new)}).
 	game := self	 newCardTestingGameWith: deck.
@@ -198,7 +198,7 @@ CardTest >> testOverloadEffectDecreasesByTwoTheRollResultOfOnlyOnePlayerAndIsAcu
 { #category : #tests }
 CardTest >> testRedoCardActsAsAPermanentIfLastPlayedCardIsPermanent [
 	| game deck |
-	deck := (GimmickDeck newWithSequence:
+	deck := (SequentialDeck newWithSequence:
 			{(Card newWith: AccelerationEffect new).
 			(Card newWith: RedoEffect new)}).
 	game := self newCardTestingGameWith: deck.
@@ -213,7 +213,7 @@ CardTest >> testRedoCardActsAsAPermanentIfLastPlayedCardIsPermanent [
 { #category : #tests }
 CardTest >> testRedoCardActsAsAnInstantIfLastPlayedCardIsInstant [
 	| game deck |
-	deck := GimmickDeck
+	deck := SequentialDeck
 		newWithSequence:
 			{(Card newWith: RepeatEffect new).
 			(Card newWith: RedoEffect new)}.
@@ -234,7 +234,7 @@ CardTest >> testRedoCardActsAsAnInstantIfLastPlayedCardIsInstant [
 { #category : #tests }
 CardTest >> testRedoCardActsAsThePreviousOneOfThePreviousOneCardIsThePreviousOneIsAnotherRedo [
 	| game deck |
-	deck := (GimmickDeck newWithSequence:
+	deck := (SequentialDeck newWithSequence:
 			{(Card newWith: AccelerationEffect new).
 			(Card newWith: RedoEffect new)}).
 	game := self newCardTestingGameWith: deck.
@@ -250,7 +250,7 @@ CardTest >> testRedoCardActsAsThePreviousOneOfThePreviousOneCardIsThePreviousOne
 { #category : #tests }
 CardTest >> testRedoCardCannotBePlayedIfAnotherCardsWereNeverPlayed [
 	| game deck |
-	deck := GimmickDeck
+	deck := SequentialDeck
 		newWithSequence:
 			{(Card newWith: AccelerationEffect new).
 			(Card newWith: RedoEffect new)}.

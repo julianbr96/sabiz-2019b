@@ -26,23 +26,34 @@ PlayerTest >> testCantPlayACardThatIsNotInTheHand [
 PlayerTest >> testCardsInHandOfReturnsEmptyColectionIfThePlayerHasNoCards [
 	| game |
 	game := Game
-		newPlayedBy: {player1. player2}
-		throwing: {SequentialDice newWithSequence: {10. 1}}
+		newPlayedBy:
+			{player1.
+			player2}
+		throwing: {(SequentialDice newWithSequence: {10 . 1})}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck newWithSequence: {Card newWith: AccelerationEffect new}).
-	game play: (Card newWith: AccelerationEffect new) for: player1 on: game players.
-	game play: (Card newWith: AccelerationEffect new) for: player1 on: game players.
-	self assert: (game cardsInHandOf: player1) asArray equals: {  }
+		using:
+			(SequentialDeck newWithSequence: {(Card newWith: AccelerationEffect new)}).
+	game
+		play: (Card newWith: AccelerationEffect new)
+		for: player1
+		on: game players.
+	game
+		play: (Card newWith: AccelerationEffect new)
+		for: player1
+		on: game players.
+	self assert: [ (game cardsInHandOf: player1) size isZero ]
 ]
 
 { #category : #tests }
 PlayerTest >> testPlayerThatFinishedCantPlayACard [
 	| game card |
 	game := Game
-		newPlayedBy: {player1. player2}
-		throwing: {SequentialDice newWithSequence: {10. 1}}
+		newPlayedBy:
+			{player1.
+			player2}
+		throwing: {(SequentialDice newWithSequence: {10 . 1})}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (GimmickDeck newWithSequence: {Card newWith: RepeatEffect new}).
+		using: (SequentialDeck newWithSequence: {(Card newWith: RepeatEffect new)}).
 	game throwDicesFor: player1.
 	game throwDicesFor: player2.
 	card := (game cardsInHandOf: player1) first.
@@ -56,13 +67,21 @@ PlayerTest >> testPlayerThatFinishedCantPlayACard [
 PlayerTest >> testPlayingACardRemovesItFromHand [
 	| game cardToPlay |
 	game := Game
-		newPlayedBy: {player1. player2}
+		newPlayedBy:
+			{player1.
+			player2}
 		throwing: {(RandomDice newWithFaces: 6)}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (Deck newWith: {AccelerationEffect new}).
+		using:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RedoEffect new)}).
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: game players. 
-	self assert: (game cardsInHandOf: player1) size equals: 1
+	game play: cardToPlay for: player1 on: game players.
+	cardToPlay := (game cardsInHandOf: player1) first.
+	game play: cardToPlay for: player1 on: game players.
+	self assert: (game cardsInHandOf: player1) size equals: 0
 ]
 
 { #category : #tests }

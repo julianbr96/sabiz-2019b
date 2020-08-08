@@ -33,7 +33,7 @@ StandardModelTestResource >> simplisticTestingGame [
 		newPlayedBy: {Player newNamed: #Player1 . Player newNamed: #Player2}
 		throwing: { SequentialDice newWithSequence: { 4 } }
 		on: (self effectlessBoardWithSpots: 10)
-		using: (GimmickDeck newWithSequence: {Card newWith: AccelerationEffect new})
+		using: (SequentialDeck newWithSequence: {Card newWith: AccelerationEffect new})
 ]
 
 { #category : #boardCreation }

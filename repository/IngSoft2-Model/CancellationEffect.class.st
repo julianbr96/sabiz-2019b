@@ -15,5 +15,6 @@ CancellationEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
 				and: [ target effect class superclass = CardPermanentEffect ])
 		description:
 			'The target of a cancelation card must be a played permanent effect card'.
-	aGame removePlayedCard: target
+	aGame removePlayedCard: target.
+	aGame addPlayedCard: (Card newWith: self) to: target by: aPlayer
 ]
