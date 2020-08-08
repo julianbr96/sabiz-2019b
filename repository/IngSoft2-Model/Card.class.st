@@ -30,7 +30,7 @@ Card >> effect [
 	^ effect
 ]
 
-{ #category : #accessing }
+{ #category : #comparing }
 Card >> hash [
 	^ self effect className hash
 ]

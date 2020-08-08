@@ -213,11 +213,17 @@ CardTest >> testRedoCardActsAsAPermanentIfLastPlayedCardIsPermanent [
 { #category : #tests }
 CardTest >> testRedoCardActsAsAnInstantIfLastPlayedCardIsInstant [
 	| game deck |
-	deck := (GimmickDeck newWithSequence:
-			{(Card newWith: SpeedEffect new).
-			(Card newWith: RedoEffect new)}).
+	deck := GimmickDeck
+		newWithSequence:
+			{(Card newWith: RepeatEffect new).
+			(Card newWith: RedoEffect new)}.
 	game := self newCardTestingGameWith: deck.
-	game play: (Card newWith: SpeedEffect new) for: player1 on: {player1}.
+	game throwDicesFor: player1.
+	game throwDicesFor: player2.
+	game
+		play: (Card newWith: RepeatEffect new)
+		for: player1
+		on: {player1}.
 	game throwDicesFor: player1.
 	game play: (Card newWith: RedoEffect new) for: player2 on: {player2}.
 	game throwDicesFor: player2.

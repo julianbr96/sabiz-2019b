@@ -4,9 +4,6 @@ Object that represents a Cancellation effect triggered by playing a card with th
 Class {
 	#name : #CancellationEffect,
 	#superclass : #CardInstantEffect,
-	#instVars : [
-		'effectToEliminate'
-	],
 	#category : #'IngSoft2-Model'
 }
 

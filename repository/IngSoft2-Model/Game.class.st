@@ -319,11 +319,15 @@ Game >> repeatLastEffectTriggeredBy: player [
 { #category : #'private - effects' }
 Game >> replayLastCardOn: target for: player [
 	| hand card |
-	self assert: playedCards isNotEmpty description: 'Cannot play redo card as there are no active played cards on the pile'.
+	self
+		assert: playedCards isNotEmpty
+		description:
+			'Cannot play redo card as there are no active played cards on the pile'.
 	card := Card newWith: playedCards last effect.
 	hand := self cardsInHandOf: player.
 	hand add: card.
-	self updateStateFor: player
+	self
+		updateStateFor: player
 		with:
 			(PlayerState
 				on: (self positionOf: player)
