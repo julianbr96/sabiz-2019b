@@ -119,7 +119,10 @@ Game >> displace: player by: anAmount [
 		nextStateFor: (self stateOf: player)
 		afterMoving: anAmount
 		onRoundNumber: turnHandler currentRoundNumber.
-	self updateStateFor: player with: newState
+	self updateStateFor: player with: newState.
+	((self playerHasFinished: player)
+		and: (leaderBoard doesNotInclude: player))
+		ifTrue: [ leaderBoard add: player ]
 ]
 
 { #category : #accessingGameState }
@@ -231,7 +234,7 @@ Game >> playOneRoundWithoutPlayingCards [
 	self assert: self isNotOver description: 'Game is already over'.
 	roundNumber := turnHandler currentRoundNumber.
 	[ roundNumber = turnHandler currentRoundNumber ]
-		whileTrue: [ self throwDicesFor: turnHandler playerWhoseTurnItIsToPlay ]
+		whileTrue: [ self throwDicesFor: self playerWhoseTurnItIsToPlay ]
 ]
 
 { #category : #'private - effects' }
@@ -349,8 +352,8 @@ Game >> rewindPositionFor: player [
 			(PlayerState
 				on: targetState spotNumber
 				andLap: targetState lapNumber
-				andRound: targetState roundNumber
-				holding: targetState cardsInHand)
+				andRound: round
+				holding: (self cardsInHandOf: player))
 ]
 
 { #category : #'private - moving' }
@@ -388,7 +391,7 @@ Game >> throwDicesFor: player [
 		assert: (self playerHasNotFinished: player)
 		description: 'Trying to move a player that has already finished'.
 	self
-		assert: turnHandler playerWhoseTurnItIsToPlay = player
+		assert: self playerWhoseTurnItIsToPlay = player
 		description: 'Trying to move a player out of turn'.
 	self
 		updateStateFor: player

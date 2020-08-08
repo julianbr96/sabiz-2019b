@@ -49,8 +49,6 @@ TurnHandler >> initializeFor: participants [
 
 { #category : #updating }
 TurnHandler >> playerHasFinished: player [
-	"This also performs the turnWheel advance indirectly"
-
 	| index |
 	self checkPresenceOf: player.
 	index := (turnWheel indexOf: player) - 1.
@@ -59,8 +57,9 @@ TurnHandler >> playerHasFinished: player [
 		description: 'Cannot remove a player from the Turn Wheel unless its his turn'.
 	turnWheel remove: player.
 	currentIndex = turnWheel size
-		ifTrue: [ currentIndex := 0.
-			currentRound := currentRound + 1 ]
+		ifFalse: [ ^ self ].
+	currentIndex := 0.
+	currentRound := currentRound + 1
 ]
 
 { #category : #accesing }
