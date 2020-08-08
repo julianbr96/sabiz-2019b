@@ -14,13 +14,13 @@ StandardModelTestResource >> effectTestingBoardWithSpots: spotsNumber and: effec
 		new: spotsNumber
 		withAll: (Spot newWith: NullEffect new).
 	spots at: spotNumber put: (Spot newWith: effect).
-	^ Board newWith: spots andLaps: self standardNumberOfLaps
+	^ Board with: spots andLaps: self standardNumberOfLaps
 ]
 
 { #category : #boardCreation }
 StandardModelTestResource >> effectlessBoardWithSpots: spotsNumber [
 	^ Board
-		newWith:
+		with:
 			(OrderedCollection
 				new: spotsNumber
 				withAll: (Spot newWith: NullEffect new))
@@ -30,10 +30,15 @@ StandardModelTestResource >> effectlessBoardWithSpots: spotsNumber [
 { #category : #gameCreation }
 StandardModelTestResource >> simplisticTestingGame [
 	^ Game
-		newPlayedBy: {Player newNamed: #Player1 . Player newNamed: #Player2}
-		throwing: { SequentialDice newWithSequence: { 4 } }
+		newPlayedBy:
+			{(Player newNamed: #Player1).
+			(Player newNamed: #Player2)}
+		throwing: {(SequentialDice newWithSequence: {4})}
 		on: (self effectlessBoardWithSpots: 10)
-		using: (SequentialDeck newWithSequence: {Card newWith: AccelerationEffect new})
+		using:
+			(SequentialDeck
+				newWithSequence: {(Card newWith: AccelerationEffect new)}
+				and: self standardNumberOfCards)
 ]
 
 { #category : #boardCreation }
@@ -47,14 +52,21 @@ StandardModelTestResource >> standardBoardWithSpots: spots [
 ]
 
 { #category : #standardValues }
-StandardModelTestResource >> standardDeckOfCards [
+StandardModelTestResource >> standardCardEffectDistribution [
 	| cardTypes |
 	cardTypes := OrderedCollection new.
 	cardTypes
 		addAll: (CardInstantEffect subclasses collect: [ :each | each new ]).
 	cardTypes
 		addAll: (CardPermanentEffect subclasses collect: [ :each | each new ]).
-	^ Deck newWith: cardTypes asArray
+	^ OverallOccurrenceDistribution evenDistributionFor: cardTypes
+]
+
+{ #category : #standardValues }
+StandardModelTestResource >> standardDeckOfCards [
+	^ Deck
+		newWith: self standardCardEffectDistribution
+		and: self standardNumberOfCards
 ]
 
 { #category : #standardValues }
@@ -91,6 +103,11 @@ StandardModelTestResource >> standardGame [
 		throwing: self standardSetOfDices
 		on: self standardBoard
 		using: self standardDeckOfCards
+]
+
+{ #category : #standardValues }
+StandardModelTestResource >> standardNumberOfCards [
+	^ 12
 ]
 
 { #category : #standardValues }
