@@ -22,19 +22,19 @@ Board class >> checkNumberOfSpots: spotsAmmount [
 ]
 
 { #category : #'instance creation' }
-Board class >> newWith: spotCollection andLaps: laps [
-	self checkNumberOfSpots: spotCollection size.
-	self checkNumberOfLaps: laps.
-	^ self new initializeWith: spotCollection andLaps: laps
-]
-
-{ #category : #'instance creation' }
 Board class >> newWith: effectDistribution andSpots: spotsAmount andLaps: laps [
 	| spots |
 	spots := OrderedCollection new.
 	spotsAmount
 		timesRepeat: [ spots add: (Spot newWith: effectDistribution random) ].
-	^ self newWith: spots andLaps: laps
+	^ self with: spots andLaps: laps
+]
+
+{ #category : #'instance creation' }
+Board class >> with: spotCollection andLaps: laps [
+	self checkNumberOfSpots: spotCollection size.
+	self checkNumberOfLaps: laps.
+	^ self new initializeWith: spotCollection andLaps: laps
 ]
 
 { #category : #accessing }

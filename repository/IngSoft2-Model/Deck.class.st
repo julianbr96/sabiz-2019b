@@ -5,24 +5,46 @@ Class {
 	#name : #Deck,
 	#superclass : #Object,
 	#instVars : [
-		'cardsDistribution'
+		'cards'
 	],
 	#category : #'IngSoft2-Model'
 }
 
 { #category : #'instance creation' }
-Deck class >> newWith: cardEffectTypes [
-	self assert: cardEffectTypes isNotEmpty.
-	^ self new
-		initializeWith: (OverallOccurrenceDistribution evenDistributionFor: cardEffectTypes)
+Deck class >> newWith: effectDistribution and: amountOfCards [
+	| cards |
+	cards := OrderedCollection new.
+	amountOfCards 
+		timesRepeat: [ cards add: (Card newWith: effectDistribution random) ].
+	^ self new initializeWith: cards
+]
+
+{ #category : #adding }
+Deck >> add: aCard [
+	cards add: aCard
 ]
 
 { #category : #initialization }
-Deck >> initializeWith: distribution [
-	cardsDistribution := distribution
+Deck >> initializeWith: cardsCollection [
+	cards := cardsCollection 
+]
+
+{ #category : #testing }
+Deck >> isEmpty [
+	^ cards isEmpty
 ]
 
 { #category : #accessing }
 Deck >> nextCard [
-	^ Card newWith: cardsDistribution random
+	| nextCard |
+	self isEmpty
+		ifTrue: [ AssertionFailure signal: 'The Deck is Empty' ].
+	nextCard := cards first.
+	cards remove: cards first.
+	^ nextCard
+]
+
+{ #category : #accessing }
+Deck >> size [
+	^ cards size
 ]

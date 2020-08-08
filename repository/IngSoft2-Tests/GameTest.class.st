@@ -49,6 +49,23 @@ GameTest >> testCantCheckThePositionOfAPlayerThatIsNotInTheGame [
 ]
 
 { #category : #'tests - instance creation' }
+GameTest >> testCantCreateGameWithMorePlayersThanCardsInDeck [
+	self
+		should: [ Game
+				newPlayedBy:
+					{player1.
+					player2}
+				throwing: {(RandomDice newWithFaces: 6)}
+				on: testResource standardBoard
+				using:
+					(SequentialDeck
+						newWithSequence: {(Card newWith: AccelerationEffect new)}
+						and: 1) ]
+		raise: AssertionFailure
+		whoseDescriptionIncludes: 'The deck has insufficient cards for number of players'
+]
+
+{ #category : #'tests - instance creation' }
 GameTest >> testCantCreateGameWithoutDices [
 	self
 		should: [ Game

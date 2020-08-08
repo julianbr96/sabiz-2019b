@@ -11,10 +11,15 @@ Class {
 PlayerTest >> testCantPlayACardThatIsNotInTheHand [
 	| game cardToPlay |
 	game := Game
-		newPlayedBy: {player1. player2}
+		newPlayedBy:
+			{player1.
+			player2}
 		throwing: {(RandomDice newWithFaces: 6)}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (Deck newWith: {RepeatEffect new}).
+		using:
+			(SequentialDeck
+				newWithSequence: {(Card newWith: RepeatEffect new)}
+				and: testResource standardNumberOfCards).
 	cardToPlay := Card newWith: OverloadEffect new.
 	self
 		should: [ game play: cardToPlay for: player1 on: player2 ]
@@ -32,7 +37,9 @@ PlayerTest >> testCardsInHandOfReturnsEmptyColectionIfThePlayerHasNoCards [
 		throwing: {(SequentialDice newWithSequence: {10 . 1})}
 		on: (testResource effectlessBoardWithSpots: 10)
 		using:
-			(SequentialDeck newWithSequence: {(Card newWith: AccelerationEffect new)}).
+			(SequentialDeck
+				newWithSequence: {(Card newWith: AccelerationEffect new)}
+				and: testResource standardNumberOfCards).
 	game
 		play: (Card newWith: AccelerationEffect new)
 		for: player1
@@ -53,7 +60,10 @@ PlayerTest >> testPlayerThatFinishedCantPlayACard [
 			player2}
 		throwing: {(SequentialDice newWithSequence: {10 . 1})}
 		on: (testResource effectlessBoardWithSpots: 10)
-		using: (SequentialDeck newWithSequence: {(Card newWith: RepeatEffect new)}).
+		using:
+			(SequentialDeck
+				newWithSequence: {(Card newWith: RepeatEffect new)}
+				and: testResource standardNumberOfCards).
 	game throwDicesFor: player1.
 	game throwDicesFor: player2.
 	card := (game cardsInHandOf: player1) first.
@@ -76,7 +86,8 @@ PlayerTest >> testPlayingACardRemovesItFromHand [
 			(SequentialDeck
 				newWithSequence:
 					{(Card newWith: AccelerationEffect new).
-					(Card newWith: RedoEffect new)}).
+					(Card newWith: RedoEffect new)}
+				and: testResource standardNumberOfCards).
 	cardToPlay := (game cardsInHandOf: player1) first.
 	game play: cardToPlay for: player1 on: game players.
 	cardToPlay := (game cardsInHandOf: player1) first.

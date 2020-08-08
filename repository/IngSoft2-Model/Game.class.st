@@ -31,6 +31,15 @@ Game class >> checkDuplicatePlayers: players [
 ]
 
 { #category : #validation }
+Game class >> checkNumberOfCardsOf: deck isEnoughFor: numberOfPlayers [
+	| totalOfCardsForAllPlayers |
+	totalOfCardsForAllPlayers := numberOfPlayers * 2.
+	self
+		assert: deck size >= totalOfCardsForAllPlayers
+		description: 'The deck has insufficient cards for number of players'
+]
+
+{ #category : #validation }
 Game class >> checkPlayerQuantity: players [
 	self
 		assert: players isNotEmpty
@@ -42,6 +51,7 @@ Game class >> newPlayedBy: players throwing: dices on: aBoard using: aDeck [
 	self checkDuplicatePlayers: players.
 	self checkPlayerQuantity: players.
 	self checkDices: dices.
+	self checkNumberOfCardsOf: aDeck isEnoughFor: players size.
 	^ self new
 		initializeWith: players
 		throwing: dices
@@ -93,6 +103,8 @@ Game >> currentRanking [
 Game >> dealCardTo: player [
 	| newState hand |
 	hand := self cardsInHandOf: player.
+	self deckIsEmpty
+		ifTrue: [ ^ self ].
 	hand add: deck nextCard.
 	newState := PlayerState
 		on: (self positionOf: player)
@@ -105,6 +117,11 @@ Game >> dealCardTo: player [
 { #category : #accessingGame }
 Game >> deck [
 	^ deck
+]
+
+{ #category : #validation }
+Game >> deckIsEmpty [
+	^ deck isEmpty
 ]
 
 { #category : #accessingGame }
@@ -295,6 +312,17 @@ Game >> positionOf: player [
 ]
 
 { #category : #'private - effects' }
+Game >> positionsToMoveAfterCalculatingPermanentEffectsOn: player [
+	| cardsTargetingPlayer |
+	cardsTargetingPlayer := (activePermanentCardEffects
+		select: [ :each | each target includes: player ])
+		collect: [ :each | each effect value ].
+	cardsTargetingPlayer isNotEmpty
+		ifTrue: [ ^ cardsTargetingPlayer sum ].
+	^ 0
+]
+
+{ #category : #'private - effects' }
 Game >> removePlayedCard: playedCard [
 	activePermanentCardEffects
 		remove: playedCard
@@ -366,17 +394,6 @@ Game >> roundNumber [
 	^ turnHandler currentRoundNumber
 ]
 
-{ #category : #'private - effects' }
-Game >> spotsToMoveAfterCalculatingPermanentEffectsOn: player [
-	| cardsTargetingPlayer |
-	cardsTargetingPlayer := (activePermanentCardEffects
-		select: [ :each | each target includes: player ])
-		collect: [ :each | each effect value ].
-	cardsTargetingPlayer isNotEmpty
-		ifTrue: [ ^ cardsTargetingPlayer sum ].
-	^ 0
-]
-
 { #category : #accessingPlayer }
 Game >> stateOf: player [
 	^ (playersStates
@@ -409,7 +426,7 @@ Game >> throwDicesFor: player [
 
 { #category : #'private - moving' }
 Game >> totalDisplacementFor: player [
-	^ self rollSum + (self spotsToMoveAfterCalculatingPermanentEffectsOn: player)
+	^ self rollSum + (self positionsToMoveAfterCalculatingPermanentEffectsOn: player)
 ]
 
 { #category : #'private - updating' }
