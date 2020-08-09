@@ -20,11 +20,6 @@ Card >> = aCard [
 	^ aCard class = self class and: [self effect class = aCard effect class]
 ]
 
-{ #category : #effect }
-Card >> applyEffectOn: players on: aGame triggeredBy: aPlayer [
-	effect applyOn: players on: aGame triggeredBy: aPlayer
-]
-
 { #category : #accessing }
 Card >> effect [
 	^ effect
@@ -38,4 +33,11 @@ Card >> hash [
 { #category : #initialization }
 Card >> initializeWith: anEffect [
 	effect := anEffect
+]
+
+{ #category : #effect }
+Card >> isPlayedBy: aPlayer on: aGame affecting: target [
+	effect checkTurnOf: aPlayer in: aGame.
+	effect applyOn: target on: aGame triggeredBy: aPlayer.
+	effect discardOrApplyPermanentEffectTo: target on: aGame
 ]

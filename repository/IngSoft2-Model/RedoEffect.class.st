@@ -11,11 +11,24 @@ Class {
 RedoEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
 	| cardToRedo |
 	cardToRedo := aGame lastPlayedCard.
-	value := cardToRedo effect value.
-	cardToRedo applyEffectOn: target on: aGame triggeredBy: aPlayer
+	permanentEffect := cardToRedo effect permanentEffect.
+	cardToRedo effect checkTurnOf: aPlayer in: aGame.
+	cardToRedo effect applyOn: target on: aGame triggeredBy: aPlayer
+]
+
+{ #category : #validation }
+RedoEffect >> checkTurnOf: aPlayer in: aGame [
+	
+]
+
+{ #category : #effect }
+RedoEffect >> discardOrApplyPermanentEffectTo: target on: aGame [
+	self permanentEffect isNotNil
+		ifTrue: [ aGame addPermanentEffectCard: (Card newWith: self) to: target ]
+		ifFalse: [ aGame discardCard: (Card newWith: self) ]
 ]
 
 { #category : #evaluating }
-RedoEffect >> value [
-	^ value
+RedoEffect >> permanentEffect [
+	^ permanentEffect
 ]

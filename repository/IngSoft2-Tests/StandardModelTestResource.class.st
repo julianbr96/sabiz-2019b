@@ -56,9 +56,7 @@ StandardModelTestResource >> standardCardEffectDistribution [
 	| cardTypes |
 	cardTypes := OrderedCollection new.
 	cardTypes
-		addAll: (CardInstantEffect subclasses collect: [ :each | each new ]).
-	cardTypes
-		addAll: (CardPermanentEffect subclasses collect: [ :each | each new ]).
+		addAll: (CardEffect subclasses collect: [ :each | each new ]).
 	^ OverallOccurrenceDistribution evenDistributionFor: cardTypes
 ]
 

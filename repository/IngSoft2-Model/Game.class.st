@@ -60,24 +60,14 @@ Game class >> newPlayedBy: players throwing: dices on: aBoard using: aDeck [
 ]
 
 { #category : #adding }
-Game >> addPermanentEffectCard: card to: target by: player [
+Game >> addPermanentEffectCard: card to: target [
 	activePermanentCardEffects
 		add: (PlayedCard newOf: card effect to: target)
 ]
 
 { #category : #'private - effects' }
-Game >> addPlayedCard: card to: target by: player [
-	| newState newHand |
-	card effect class = RedoEffect
-		ifFalse: [ playedCards add: (PlayedCard newOf: card effect to: target) ].
-	newHand := self cardsInHandOf: player.
-	newHand remove: card.
-	newState := PlayerState
-		on: (self positionOf: player)
-		andLap: (self lapOf: player)
-		andRound: turnHandler currentRoundNumber
-		holding: newHand.
-	self updateStateFor: player with: newState
+Game >> addPlayedCard: card to: target [
+	playedCards add: (PlayedCard newOf: card effect to: target)
 ]
 
 { #category : #'private - effects' }
@@ -256,11 +246,8 @@ Game >> play: card by: player on: target [
 		assert: (self playerHasNotFinished: player)
 		description: 'Trying to play a card for a player that has already finished'.
 	(self stateOf: player) checkAvailabilityOf: card.
-	card applyEffectOn: target on: self triggeredBy: player.
-	self addPlayedCard: card to: target by: player.
-	card effect value isNil
-		ifTrue: [ self discardCard: card ]
-		ifFalse: [ self addPermanentEffectCard: card to: target by: player ]
+	card isPlayedBy: player on: self affecting: target.
+	self remove: card fromHandOf: player
 ]
 
 { #category : #playing }
@@ -339,7 +326,7 @@ Game >> positionsToMoveAfterCalculatingPermanentEffectsOn: player [
 	| cardsTargetingPlayer |
 	cardsTargetingPlayer := (activePermanentCardEffects
 		select: [ :each | each target includes: player ])
-		collect: [ :each | each effect value ].
+		collect: [ :each | each effect permanentEffect ].
 	cardsTargetingPlayer isNotEmpty
 		ifTrue: [ ^ cardsTargetingPlayer sum ].
 	^ 0
@@ -355,13 +342,26 @@ Game >> primaryDeckIsEmpty [
 	^ self primaryDeck isEmpty
 ]
 
+{ #category : #playing }
+Game >> remove: card fromHandOf: player [
+	| newState newHand |
+	newHand := self cardsInHandOf: player.
+	newHand remove: card.
+	newState := PlayerState
+		on: (self positionOf: player)
+		andLap: (self lapOf: player)
+		andRound: turnHandler currentRoundNumber
+		holding: newHand.
+	self updateStateFor: player with: newState
+]
+
 { #category : #'private - effects' }
 Game >> removePlayedCard: playedCard [
 	activePermanentCardEffects
 		remove: playedCard
 		ifAbsent: [ AssertionFailure
 				signal:
-					'Tried to remove a non existent played card (check that both the effect and the target are in order)' ].
+					'Tried to remove a non existent permanent effect played card (check that both the effect and the target are in order)' ].
 	self discardCard: (Card newWith: playedCard effect)
 ]
 
