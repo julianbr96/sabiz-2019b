@@ -260,20 +260,6 @@ CardTest >> testCantPlayAPermanentCardIfItsNotTheTurnOfThePlayer [
 ]
 
 { #category : #'tests - deck' }
-CardTest >> testDeckHasGivenDistributionOfCardEffects [
-	| game amountOfCards |
-	amountOfCards := 12.
-	game := self
-		newCardTestingGameWith:
-			(SequentialDeck
-				newWithSequence:
-					{(Card newWith: AccelerationEffect new).
-					(Card newWith: RedoEffect new)}
-				and: amountOfCards).
-	self assert: game primaryDeck size equals: 8
-]
-
-{ #category : #'tests - deck' }
 CardTest >> testGettingACardFromDeckRemovesItFromDeck [
 	| game amountOfCards |
 	amountOfCards := 12.

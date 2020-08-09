@@ -9,7 +9,6 @@ Class {
 
 { #category : #effect }
 SpeedEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
-	super applyOn: target on: aGame triggeredBy: aPlayer.
 	self
 		assert: target size = 1
 		description: 'The speedup card can only be played on a single player'.

@@ -12,7 +12,7 @@ RedoEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
 	| cardToRedo |
 	cardToRedo := aGame lastPlayedCard.
 	permanentEffect := cardToRedo effect permanentEffect.
-	permanentEffect checkTurnOf: aPlayer in: aGame.
+	cardToRedo effect checkTurnOf: aPlayer in: aGame.
 	cardToRedo effect applyOn: target on: aGame triggeredBy: aPlayer
 ]
 

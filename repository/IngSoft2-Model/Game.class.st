@@ -326,7 +326,7 @@ Game >> positionsToMoveAfterCalculatingPermanentEffectsOn: player [
 	| cardsTargetingPlayer |
 	cardsTargetingPlayer := (activePermanentCardEffects
 		select: [ :each | each target includes: player ])
-		collect: [ :each | each effect value ].
+		collect: [ :each | each effect permanentEffect ].
 	cardsTargetingPlayer isNotEmpty
 		ifTrue: [ ^ cardsTargetingPlayer sum ].
 	^ 0
@@ -361,7 +361,7 @@ Game >> removePlayedCard: playedCard [
 		remove: playedCard
 		ifAbsent: [ AssertionFailure
 				signal:
-					'Tried to remove a non existent played card (check that both the effect and the target are in order)' ].
+					'Tried to remove a non existent permanent effect played card (check that both the effect and the target are in order)' ].
 	self discardCard: (Card newWith: playedCard effect)
 ]
 

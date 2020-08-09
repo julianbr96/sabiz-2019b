@@ -9,12 +9,6 @@ Class {
 
 { #category : #effect }
 CancellationEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
-	self
-		assert:
-			(target class = PlayedCard
-				and: [ target effect permanentEffect isNotNil ])
-		description:
-			'The target of a cancelation card must be a played permanent effect card'.
 	aGame removePlayedCard: target.
 	aGame addPlayedCard: (Card newWith: self) to: target
 ]
