@@ -48,7 +48,7 @@ CardTest >> testARepeatCardCantBePlayedOnAPlayerThatFinished [
 	game throwDicesFor: player1.
 	card := (game cardsInHandOf: player2) first.
 	self
-		should: [ game play: card for: player2 on: {player1} ]
+		should: [ game play: card by: player2 on: {player1} ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'The repeat card cant be played on a player that has already finished'
 ]
@@ -69,7 +69,7 @@ CardTest >> testASpeedCardCantBePlayedOnAPlayerThatFinished [
 	game throwDicesFor: player1.
 	card := (game cardsInHandOf: player2) first.
 	self
-		should: [ game play: card for: player2 on: {player1} ]
+		should: [ game play: card by: player2 on: {player1} ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'The speed card cant be played on a player that has already finished'
 ]
@@ -79,9 +79,9 @@ CardTest >> testAccelerationEffectIncreasesByOneRollResults [
 	| game cardToPlay |
 	game := self newCardTestingGameFor: AccelerationEffect new.
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: game players.
+	game play: cardToPlay by: player1 on: game players.
 	game throwDicesFor: player1.
-	game play: cardToPlay for: player2 on: game players.
+	game play: cardToPlay by: player2 on: game players.
 	game throwDicesFor: player2.
 	self assert: (game positionOf: player1) equals: 3.
 	self assert: (game positionOf: player2) equals: 4
@@ -92,10 +92,10 @@ CardTest >> testAccelerationMustBeTargetedToAllPlayers [
 	| game cardToPlay |
 	game := self newCardTestingGameFor: AccelerationEffect new.
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: { player1. player2 }.
+	game play: cardToPlay by: player1 on: { player1. player2 }.
 	game throwDicesFor: player1.
 	self
-		should: [game play: cardToPlay for: player2 on: { player1 }]
+		should: [game play: cardToPlay by: player2 on: { player1 }]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Tried to play acceleration card on a specific set of players instead of all of them'
 ]
@@ -116,10 +116,61 @@ CardTest >> testAnOverloadCardCantBePlayedOnAPlayerThatFinished [
 	game throwDicesFor: player1.
 	card := (game cardsInHandOf: player2) first.
 	self
-		should: [ game play: card for: player2 on: {player1} ]
+		should: [ game play: card by: player2 on: {player1} ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes:
 			'The overload card cant be played on a player that has already finished'
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testCanGetAnotherCardIfOneOfTheDecksIsNotEmpty [
+	| game amountOfCards board |
+	board := testResource
+		effectTestingBoardWithSpots: 10
+		and: CardGivingEffect new
+		at: 3.
+	amountOfCards := 6.
+	game := Game
+		newPlayedBy: testResource standardSetOfPlayers
+		throwing: {(SequentialDice newWithSequence: {1})}
+		on: board
+		using:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RepeatEffect new)}
+				and: amountOfCards).
+	self assert: game primaryDeckIsEmpty.
+	game playOneRoundWithoutPlayingCards.
+	game play: (Card newWith: RepeatEffect new) by: player1 on: {player1}.
+	game throwDicesFor: player1.
+	self
+		assert: (game primaryDeckIsEmpty and: [ game discardDeckIsEmpty ]).
+	self assert: (game cardsInHandOf: player1) size equals: 2
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testCancellatingAPermanentCardDiscardItToTheDiscardDeck [
+	| game amountOfCards cardToPlay |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: CancellationEffect new)}
+				and: amountOfCards).
+	self assert: game discardDeckIsEmpty.
+	cardToPlay := (game cardsInHandOf: player1) first.
+	game play: cardToPlay by: player1 on: game players.
+	game throwDicesFor: player1.
+	cardToPlay := (game cardsInHandOf: player2) last.
+	game
+		play: cardToPlay
+		by: player2
+		on: (PlayedCard newOf: AccelerationEffect new to: game players).
+	self assert: game primaryDeck size equals: 8.
+	self assert: game discardDeck size equals: 2
 ]
 
 { #category : #tests }
@@ -133,17 +184,17 @@ CardTest >> testCancellationCardAffectingAllPlayersRemovesOnlyOneGlobalEffect [
 	game := self newCardTestingGameWith: deck.
 	game
 		play: (Card newWith: AccelerationEffect new)
-		for: player1
+		by: player1
 		on: game players.
 	game throwDicesFor: player1.
 	game
 		play: (Card newWith: AccelerationEffect new)
-		for: player2
+		by: player2
 		on: game players.
 	game throwDicesFor: player2.
 	game
 		play: (Card newWith: CancellationEffect new)
-		for: player2
+		by: player2
 		on: (PlayedCard newOf: AccelerationEffect new to: game players).
 	game throwDicesFor: player1.
 	self assert: (game positionOf: player1) equals: 5.
@@ -159,17 +210,42 @@ CardTest >> testCancellationCardAffectingOnePlayersRemovesOnlyOneOfHisLocalEffec
 			(Card newWith: CancellationEffect new)}
 		and: testResource standardNumberOfCards.
 	game := self newCardTestingGameWith: deck.
-	game play: (Card newWith: SpeedEffect new) for: player1 on: {player1}.
+	game play: (Card newWith: SpeedEffect new) by: player1 on: {player1}.
 	game throwDicesFor: player1.
-	game play: (Card newWith: SpeedEffect new) for: player2 on: {player1}.
+	game play: (Card newWith: SpeedEffect new) by: player2 on: {player1}.
 	game throwDicesFor: player2.
 	game
 		play: (Card newWith: CancellationEffect new)
-		for: player2
+		by: player2
 		on: (PlayedCard newOf: SpeedEffect new to: {player1}).
 	game throwDicesFor: player1.
 	self assert: (game positionOf: player1) equals: 5.
 	self assert: (game positionOf: player2) equals: 2
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testCannotGetAnotherCardIfTheDeckIsEmpty [
+	| game amountOfCards board |
+	board := testResource
+		effectTestingBoardWithSpots: 10
+		and: CardGivingEffect new
+		at: 3.
+	amountOfCards := 6.
+	game := Game
+		newPlayedBy: testResource standardSetOfPlayers
+		throwing: {(SequentialDice newWithSequence: {1})}
+		on: board
+		using:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RepeatEffect new)}
+				and: amountOfCards).
+	game playOneRoundWithoutPlayingCards.
+	game throwDicesFor: player1.
+	self assert: (game cardsInHandOf: player1) size equals: 2.
+	self
+		assert: (game primaryDeckIsEmpty and: [ game discardDeckIsEmpty ])
 ]
 
 { #category : #tests }
@@ -178,9 +254,37 @@ CardTest >> testCantPlayAPermanentCardIfItsNotTheTurnOfThePlayer [
 	game := self newCardTestingGameFor: AccelerationEffect new.
 	cardToPlay := (game cardsInHandOf: player2) first.
 	self
-		should: [ game play: cardToPlay for: player2 on: { player1. player2 } ]
+		should: [ game play: cardToPlay by: player2 on: { player1. player2 } ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Cant play a permanent card out of turn'
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testDeckHasGivenDistributionOfCardEffects [
+	| game amountOfCards |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RedoEffect new)}
+				and: amountOfCards).
+	self assert: game primaryDeck size equals: 8
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testGettingACardFromDeckRemovesItFromDeck [
+	| game amountOfCards |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RedoEffect new)}
+				and: amountOfCards).
+	self assert: game primaryDeck size equals: 8
 ]
 
 { #category : #tests }
@@ -199,7 +303,7 @@ CardTest >> testInstantCardCanBePlayedEvenIfItIsNotTheTurnOfThePlayer [
 	self assert: (game positionOf: player1) equals: 1.
 	self assert: (game lapOf: player1) equals: 1.
 	self assert: game playerWhoseTurnItIsToPlay equals: player2.
-	game play: cardToPlay for: player1 on: {player1}
+	game play: cardToPlay by: player1 on: {player1}
 ]
 
 { #category : #tests }
@@ -207,7 +311,7 @@ CardTest >> testOverloadEffectDecreasesByTwoTheRollResultOfOnlyOnePlayer [
 	| game cardToPlay |
 	game := self newCardTestingGameFor: OverloadEffect new.
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: {player2}.
+	game play: cardToPlay by: player1 on: {player2}.
 	game throwDicesFor: player1.
 	game throwDicesFor: player2.
 	self assert: (game positionOf: player1) equals: 2.
@@ -220,15 +324,49 @@ CardTest >> testOverloadEffectDecreasesByTwoTheRollResultOfOnlyOnePlayerAndIsAcu
 	| game cardToPlay |
 	game := self newCardTestingGameFor: OverloadEffect new.
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: {player1}.
+	game play: cardToPlay by: player1 on: {player1}.
 	game throwDicesFor: player1.
 	cardToPlay := (game cardsInHandOf: player2) first.
-	game play: cardToPlay for: player2 on: {player1}.
+	game play: cardToPlay by: player2 on: {player1}.
 	game throwDicesFor: player2.
 	game throwDicesFor: player1.
 	self assert: (game positionOf: player1) equals: 7.
 	self assert: (game lapOf: player1) equals: -1.
 	self assert: (game positionOf: player2) equals: 2
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testPlayingAPermanentCardDoesNotDiscardItToTheDiscardDeck [
+	| game amountOfCards cardToPlay |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence: {(Card newWith: AccelerationEffect new)}
+				and: amountOfCards).
+	game playOneRoundWithoutPlayingCards.
+	self assert: game discardDeckIsEmpty.
+	cardToPlay := (game cardsInHandOf: player1) first.
+	game play: cardToPlay by: player1 on: game players.
+	self assert: game primaryDeck size equals: 8.
+	self assert: game discardDeckIsEmpty
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testPlayingAnInstantCardDiscardItToTheDiscardDeck [
+	| game amountOfCards cardToPlay |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence: {(Card newWith: RepeatEffect new)}
+				and: amountOfCards).
+	game playOneRoundWithoutPlayingCards.
+	self assert: game discardDeckIsEmpty.
+	cardToPlay := (game cardsInHandOf: player1) first.
+	game play: cardToPlay by: player1 on: {player1}.
+	self assert: game primaryDeck size equals: 8.
+	self assert: game discardDeck size equals: 1
 ]
 
 { #category : #tests }
@@ -242,15 +380,16 @@ CardTest >> testRedoCardActsAsAPermanentIfLastPlayedCardIsPermanent [
 	game := self newCardTestingGameWith: deck.
 	game
 		play: (Card newWith: AccelerationEffect new)
-		for: player1
+		by: player1
 		on: game players.
 	game throwDicesFor: player1.
 	game
 		play: (Card newWith: RedoEffect new)
-		for: player2
+		by: player2
 		on: game players.
 	game throwDicesFor: player2.
-	self assert: (game positionOf: player1) equals: 3.
+	game throwDicesFor: player1.
+	self assert: (game positionOf: player1) equals: 6.
 	self assert: (game positionOf: player2) equals: 4
 ]
 
@@ -267,10 +406,10 @@ CardTest >> testRedoCardActsAsAnInstantIfLastPlayedCardIsInstant [
 	game throwDicesFor: player2.
 	game
 		play: (Card newWith: RepeatEffect new)
-		for: player1
+		by: player1
 		on: {player1}.
 	game throwDicesFor: player1.
-	game play: (Card newWith: RedoEffect new) for: player2 on: {player2}.
+	game play: (Card newWith: RedoEffect new) by: player2 on: {player2}.
 	game throwDicesFor: player2.
 	self assert: (game positionOf: player1) equals: 3.
 	self assert: (game positionOf: player2) equals: 3
@@ -287,16 +426,16 @@ CardTest >> testRedoCardActsAsThePreviousOneOfThePreviousOneCardIsThePreviousOne
 	game := self newCardTestingGameWith: deck.
 	game
 		play: (Card newWith: AccelerationEffect new)
-		for: player1
+		by: player1
 		on: game players.
 	game
 		play: (Card newWith: RedoEffect new)
-		for: player1
+		by: player1
 		on: game players.
 	game throwDicesFor: player1.
 	game
 		play: (Card newWith: RedoEffect new)
-		for: player2
+		by: player2
 		on: game players.
 	game throwDicesFor: player2.
 	self assert: (game positionOf: player1) equals: 4.
@@ -315,11 +454,59 @@ CardTest >> testRedoCardCannotBePlayedIfAnotherCardsWereNeverPlayed [
 	self
 		should: [ game
 				play: (Card newWith: RedoEffect new)
-				for: player1
+				by: player1
 				on: game players ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes:
 			'Cannot play redo card as there are no active played cards on the pile'
+]
+
+{ #category : #tests }
+CardTest >> testRedoCardIsDiscardedAfterBeingCancelledIfItActsAsAPermanent [
+	| game deck |
+	deck := SequentialDeck
+		newWithSequence:
+			{(Card newWith: AccelerationEffect new).
+			(Card newWith: CancellationEffect new).
+			(Card newWith: RedoEffect new)}
+		and: testResource standardNumberOfCards.
+	game := self newCardTestingGameWith: deck.
+	game throwDicesFor: player1.
+	game throwDicesFor: player2.
+	game
+		play: (Card newWith: AccelerationEffect new)
+		by: player1
+		on: game players.
+	game throwDicesFor: player1.
+	game
+		play: (Card newWith: RedoEffect new)
+		by: player2
+		on: game players.
+	game throwDicesFor: player2.
+	self assert: game discardDeckIsEmpty.
+	game
+		play: (Card newWith: CancellationEffect new)
+		by: player1
+		on: (PlayedCard newOf: RedoEffect new to: game players).
+	self assert: game discardDeck size equals: 2
+]
+
+{ #category : #tests }
+CardTest >> testRedoCardIsDiscardedAfterBeingPlayedIfItActsAsAnInstant [
+	| game deck |
+	deck := SequentialDeck
+		newWithSequence:
+			{(Card newWith: RepeatEffect new).
+			(Card newWith: RedoEffect new)}
+		and: testResource standardNumberOfCards.
+	game := self newCardTestingGameWith: deck.
+	game throwDicesFor: player1.
+	game throwDicesFor: player2.
+	game play: (Card newWith: RepeatEffect new) by: player1 on: {player1}.
+	game throwDicesFor: player1.
+	game play: (Card newWith: RedoEffect new) by: player2 on: {player2}.
+	game throwDicesFor: player2.
+	self assert: game discardDeck size equals: 2
 ]
 
 { #category : #tests }
@@ -328,7 +515,7 @@ CardTest >> testRepeatCardCannotBePlayedIfDicesNeverRolled [
 	game := self newCardTestingGameFor: RepeatEffect new.
 	cardToPlay := (game cardsInHandOf: player1) first.
 	self
-		should: [ game play: cardToPlay for: player1 on: {player2} ]
+		should: [ game play: cardToPlay by: player1 on: {player2} ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Cant play repeat card on a player that hasnt triggered an effect yet'
 ]
@@ -348,7 +535,7 @@ CardTest >> testRepeatCardRepeatesTheEffectOfTheSpotReachedAfterRollingDices [
 	game throwDicesFor: player1.
 	self assert: (game positionOf: player1) equals: 1.
 	self assert: (game lapOf: player1) equals: 1.
-	game play: cardToPlay for: player1 on: {player1}.
+	game play: cardToPlay by: player1 on: {player1}.
 	self assert: (game positionOf: player1) equals: 5.
 	self assert: (game lapOf: player1) equals: 1
 ]
@@ -358,10 +545,10 @@ CardTest >> testSpeedEffectIncreasesByOneTheRollResulOfOnlyOnePlayerAndIsAcumula
 	| game cardToPlay |
 	game := self newCardTestingGameFor: SpeedEffect new.
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: {player1}.
+	game play: cardToPlay by: player1 on: {player1}.
 	game throwDicesFor: player1.
 	cardToPlay := (game cardsInHandOf: player2) first.
-	game play: cardToPlay for: player2 on: {player1}.
+	game play: cardToPlay by: player2 on: {player1}.
 	game throwDicesFor: player2.
 	game throwDicesFor: player1.
 	self assert: (game positionOf: player1) equals: 6.
@@ -373,7 +560,7 @@ CardTest >> testSpeedEffectIncreasesByOneTheRollResultOfOnlyOnePlayer [
 	| game cardToPlay |
 	game := self newCardTestingGameFor: SpeedEffect new.
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: {player1}.
+	game play: cardToPlay by: player1 on: {player1}.
 	game throwDicesFor: player1.
 	game throwDicesFor: player2.
 	self assert: (game positionOf: player1) equals: 3.

@@ -22,7 +22,7 @@ PlayerTest >> testCantPlayACardThatIsNotInTheHand [
 				and: testResource standardNumberOfCards).
 	cardToPlay := Card newWith: OverloadEffect new.
 	self
-		should: [ game play: cardToPlay for: player1 on: player2 ]
+		should: [ game play: cardToPlay by: player1 on: player2 ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'That card is not in the hand of the player'
 ]
@@ -42,11 +42,11 @@ PlayerTest >> testCardsInHandOfReturnsEmptyColectionIfThePlayerHasNoCards [
 				and: testResource standardNumberOfCards).
 	game
 		play: (Card newWith: AccelerationEffect new)
-		for: player1
+		by: player1
 		on: game players.
 	game
 		play: (Card newWith: AccelerationEffect new)
-		for: player1
+		by: player1
 		on: game players.
 	self assert: [ (game cardsInHandOf: player1) size isZero ]
 ]
@@ -68,7 +68,7 @@ PlayerTest >> testPlayerThatFinishedCantPlayACard [
 	game throwDicesFor: player2.
 	card := (game cardsInHandOf: player1) first.
 	self
-		should: [ game play: card for: player1 on: {player2} ]
+		should: [ game play: card by: player1 on: {player2} ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Trying to play a card for a player that has already finished'
 ]
@@ -89,9 +89,9 @@ PlayerTest >> testPlayingACardRemovesItFromHand [
 					(Card newWith: RedoEffect new)}
 				and: testResource standardNumberOfCards).
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: game players.
+	game play: cardToPlay by: player1 on: game players.
 	cardToPlay := (game cardsInHandOf: player1) first.
-	game play: cardToPlay for: player1 on: game players.
+	game play: cardToPlay by: player1 on: game players.
 	self assert: (game cardsInHandOf: player1) size equals: 0
 ]
 

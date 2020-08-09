@@ -10,7 +10,7 @@ Class {
 		'board',
 		'playersStates',
 		'playedCards',
-		'deck',
+		'decks',
 		'turnHandler',
 		'triggeredEffects',
 		'activePermanentCardEffects'
@@ -68,7 +68,8 @@ Game >> addPermanentEffectCard: card to: target by: player [
 { #category : #'private - effects' }
 Game >> addPlayedCard: card to: target by: player [
 	| newState newHand |
-	playedCards add: (PlayedCard newOf: card effect to: target).
+	card effect class = RedoEffect
+		ifFalse: [ playedCards add: (PlayedCard newOf: card effect to: target) ].
 	newHand := self cardsInHandOf: player.
 	newHand remove: card.
 	newState := PlayerState
@@ -103,9 +104,11 @@ Game >> currentRanking [
 Game >> dealCardTo: player [
 	| newState hand |
 	hand := self cardsInHandOf: player.
-	self deckIsEmpty
+	(self primaryDeckIsEmpty and: [ self discardDeckIsEmpty ])
 		ifTrue: [ ^ self ].
-	hand add: deck nextCard.
+	self primaryDeckIsEmpty
+		ifTrue: [ self shuffle ].
+	hand add: self primaryDeck nextCard.
 	newState := PlayerState
 		on: (self positionOf: player)
 		andLap: (self lapOf: player)
@@ -115,18 +118,23 @@ Game >> dealCardTo: player [
 ]
 
 { #category : #accessingGame }
-Game >> deck [
-	^ deck
+Game >> dices [
+	^ dices copy
 ]
 
-{ #category : #validation }
-Game >> deckIsEmpty [
-	^ deck isEmpty
+{ #category : #adding }
+Game >> discardCard: card [
+	self discardDeck add: card
 ]
 
 { #category : #accessingGame }
-Game >> dices [
-	^ dices copy
+Game >> discardDeck [
+	^ decks last
+]
+
+{ #category : #validation }
+Game >> discardDeckIsEmpty [
+	^ self discardDeck isEmpty
 ]
 
 { #category : #'private - effects' }
@@ -156,7 +164,9 @@ Game >> historyOf: player [
 Game >> initializeWith: gamePlayers throwing: gameDices on: aBoard using: aDeck [
 	leaderBoard := LeaderBoard new.
 	board := aBoard copy.
-	deck := aDeck.
+	decks := OrderedCollection new.
+	decks add: aDeck.
+	decks add: OrderedCollection new.
 	turnHandler := TurnHandler newFor: gamePlayers.
 	dices := gameDices copy.
 	playedCards := OrderedCollection new.
@@ -170,11 +180,11 @@ Game >> initializeWith: gamePlayers throwing: gameDices on: aBoard using: aDeck 
 						on: 1
 						andLap: 0
 						holding:
-							{deck nextCard.
-							deck nextCard})} asOrderedCollection ]) asOrderedDictionary.
+							{self primaryDeck nextCard.
+							self primaryDeck nextCard})} asOrderedCollection ])
+		asOrderedDictionary.
 	triggeredEffects := (gamePlayers
-		collect:
-			[ :each | Association key: each value: OrderedCollection new ])
+		collect: [ :each | Association key: each value: OrderedCollection new ])
 		asOrderedDictionary
 ]
 
@@ -196,6 +206,15 @@ Game >> isPlayedBy: player [
 { #category : #accessingPlayer }
 Game >> lapOf: player [
 	^ (self stateOf: player) lapNumber
+]
+
+{ #category : #'private - effects' }
+Game >> lastPlayedCard [
+	self
+		assert: playedCards isNotEmpty
+		description:
+			'Cannot play redo card as there are no active played cards on the pile'.
+	^ Card newWith: playedCards last effect
 ]
 
 { #category : #'private - moving' }
@@ -232,12 +251,16 @@ Game >> numberOfPlayers [
 ]
 
 { #category : #playing }
-Game >> play: card for: player on: target [
+Game >> play: card by: player on: target [
 	self
 		assert: (self playerHasNotFinished: player)
 		description: 'Trying to play a card for a player that has already finished'.
 	(self stateOf: player) checkAvailabilityOf: card.
-	card applyEffectOn: target on: self triggeredBy: player
+	card applyEffectOn: target on: self triggeredBy: player.
+	self addPlayedCard: card to: target by: player.
+	card effect value isNil
+		ifTrue: [ self discardCard: card ]
+		ifFalse: [ self addPermanentEffectCard: card to: target by: player ]
 ]
 
 { #category : #playing }
@@ -322,13 +345,24 @@ Game >> positionsToMoveAfterCalculatingPermanentEffectsOn: player [
 	^ 0
 ]
 
+{ #category : #accessingGame }
+Game >> primaryDeck [
+	^ decks first
+]
+
+{ #category : #validation }
+Game >> primaryDeckIsEmpty [
+	^ self primaryDeck isEmpty
+]
+
 { #category : #'private - effects' }
 Game >> removePlayedCard: playedCard [
 	activePermanentCardEffects
 		remove: playedCard
 		ifAbsent: [ AssertionFailure
 				signal:
-					'Tried to remove a non existent played card (check that both the effect and the target are in order)' ]
+					'Tried to remove a non existent played card (check that both the effect and the target are in order)' ].
+	self discardCard: (Card newWith: playedCard effect)
 ]
 
 { #category : #'private - effects' }
@@ -341,28 +375,6 @@ Game >> repeatLastEffectTriggeredBy: player [
 	"Steping on a null effect still counts as triggering an effect"
 	effect := effectsTriggeredByPlayer last.
 	self apply: effect for: player
-]
-
-{ #category : #'private - effects' }
-Game >> replayLastCardOn: target for: player [
-	| hand card |
-	self
-		assert: playedCards isNotEmpty
-		description:
-			'Cannot play redo card as there are no active played cards on the pile'.
-	card := Card newWith: playedCards last effect.
-	hand := self cardsInHandOf: player.
-	hand remove: (Card newWith: RedoEffect new).
-	hand add: card.
-	self
-		updateStateFor: player
-		with:
-			(PlayerState
-				on: (self positionOf: player)
-				andLap: (self lapOf: player)
-				andRound: turnHandler currentRoundNumber
-				holding: hand).
-	self play: card for: player on: target
 ]
 
 { #category : #'private - effects' }
@@ -392,6 +404,12 @@ Game >> rollSum [
 { #category : #accessingGameState }
 Game >> roundNumber [
 	^ turnHandler currentRoundNumber
+]
+
+{ #category : #adding }
+Game >> shuffle [
+	self discardDeck do: [ :each | self primaryDeck add: each ].
+	decks at: 2 put: OrderedCollection new
 ]
 
 { #category : #accessingPlayer }
