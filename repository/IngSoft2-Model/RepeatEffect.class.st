@@ -15,5 +15,6 @@ RepeatEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
 	self
 		assert: (aGame playerHasNotFinished: target first)
 		description: 'The repeat card cant be played on a player that has already finished'.
-	aGame repeatLastEffectTriggeredBy: target first
+	aGame repeatLastEffectTriggeredBy: target first.
+	aGame discardCard: (Card newWith: self)
 ]

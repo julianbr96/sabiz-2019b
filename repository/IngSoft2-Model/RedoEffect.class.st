@@ -9,5 +9,6 @@ Class {
 
 { #category : #effect }
 RedoEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
-	aGame replayLastCardOn: target for: aPlayer
+	aGame replayLastCardOn: target for: aPlayer.
+	aGame discardCard: (Card newWith: self)
 ]

@@ -122,6 +122,30 @@ CardTest >> testAnOverloadCardCantBePlayedOnAPlayerThatFinished [
 			'The overload card cant be played on a player that has already finished'
 ]
 
+{ #category : #'tests - deck' }
+CardTest >> testCancellatingAPermanentCardDiscardItToTheDiscardDeck [
+	| game amountOfCards cardToPlay |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: CancellationEffect new)}
+				and: amountOfCards).
+	self assert: game discardDeckIsEmpty.
+	cardToPlay := (game cardsInHandOf: player1) first.
+	game play: cardToPlay by: player1 on: game players.
+	game throwDicesFor: player1.
+	cardToPlay := (game cardsInHandOf: player2) last.
+	game
+		play: cardToPlay
+		by: player2
+		on: (PlayedCard newOf: AccelerationEffect new to: game players).
+	self assert: game primaryDeck size equals: 8.
+	self assert: game discardDeck size equals: 2
+]
+
 { #category : #tests }
 CardTest >> testCancellationCardAffectingAllPlayersRemovesOnlyOneGlobalEffect [
 	| game deck |
@@ -183,6 +207,21 @@ CardTest >> testCantPlayAPermanentCardIfItsNotTheTurnOfThePlayer [
 		whoseDescriptionIncludes: 'Cant play a permanent card out of turn'
 ]
 
+{ #category : #'tests - deck' }
+CardTest >> testGettingACardFromDeckRemovesItFromDeck [
+	| game amountOfCards |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RedoEffect new)}
+				and: amountOfCards).
+	self assert: game primaryDeckIsEmpty not
+	
+]
+
 { #category : #tests }
 CardTest >> testInstantCardCanBePlayedEvenIfItIsNotTheTurnOfThePlayer [
 	| game cardToPlay board deck |
@@ -229,6 +268,40 @@ CardTest >> testOverloadEffectDecreasesByTwoTheRollResultOfOnlyOnePlayerAndIsAcu
 	self assert: (game positionOf: player1) equals: 7.
 	self assert: (game lapOf: player1) equals: -1.
 	self assert: (game positionOf: player2) equals: 2
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testPlayingAPermanentCardDoesNotDiscardItToTheDiscardDeck [
+	| game amountOfCards cardToPlay |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence: {(Card newWith: AccelerationEffect new)}
+				and: amountOfCards).
+	game playOneRoundWithoutPlayingCards.
+	self assert: game discardDeckIsEmpty.
+	cardToPlay := (game cardsInHandOf: player1) first.
+	game play: cardToPlay by: player1 on: game players.
+	self assert: game primaryDeck size equals: 8.
+	self assert: game discardDeckIsEmpty
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testPlayingAnInstantCardDiscardItToTheDiscardDeck [
+	| game amountOfCards cardToPlay |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence: {(Card newWith: RepeatEffect new)}
+				and: amountOfCards).
+	game playOneRoundWithoutPlayingCards.
+	self assert: game discardDeckIsEmpty.
+	cardToPlay := (game cardsInHandOf: player1) first.
+	game play: cardToPlay by: player1 on: {player1}.
+	self assert: game primaryDeck size equals: 8.
+	self assert: game discardDeck size equals: 1
 ]
 
 { #category : #tests }

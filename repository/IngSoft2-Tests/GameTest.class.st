@@ -121,7 +121,7 @@ GameTest >> testGameHasGivenDeckOfCards [
 		throwing: testResource standardSetOfDices
 		on: (testResource effectlessBoardWithSpots: 10)
 		using: deck.
-	self assert: game deck equals: deck
+	self assert: game primaryDeck equals: deck
 ]
 
 { #category : #'test - accessing' }

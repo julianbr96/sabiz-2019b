@@ -10,7 +10,7 @@ Class {
 		'board',
 		'playersStates',
 		'playedCards',
-		'deck',
+		'decks',
 		'turnHandler',
 		'triggeredEffects',
 		'activePermanentCardEffects'
@@ -104,9 +104,9 @@ Game >> currentRanking [
 Game >> dealCardTo: player [
 	| newState hand |
 	hand := self cardsInHandOf: player.
-	self deckIsEmpty
+	self primaryDeckIsEmpty
 		ifTrue: [ ^ self ].
-	hand add: deck nextCard.
+	hand add: self primaryDeck nextCard.
 	newState := PlayerState
 		on: (self positionOf: player)
 		andLap: (self lapOf: player)
@@ -116,18 +116,23 @@ Game >> dealCardTo: player [
 ]
 
 { #category : #accessingGame }
-Game >> deck [
-	^ deck
+Game >> dices [
+	^ dices copy
 ]
 
-{ #category : #validation }
-Game >> deckIsEmpty [
-	^ deck isEmpty
+{ #category : #adding }
+Game >> discardCard: card [
+	self discardDeck add: card
 ]
 
 { #category : #accessingGame }
-Game >> dices [
-	^ dices copy
+Game >> discardDeck [
+	^ decks last
+]
+
+{ #category : #validation }
+Game >> discardDeckIsEmpty [
+	^ self discardDeck isEmpty
 ]
 
 { #category : #'private - effects' }
@@ -157,7 +162,9 @@ Game >> historyOf: player [
 Game >> initializeWith: gamePlayers throwing: gameDices on: aBoard using: aDeck [
 	leaderBoard := LeaderBoard new.
 	board := aBoard copy.
-	deck := aDeck.
+	decks := OrderedCollection new.
+	decks add: aDeck.
+	decks add: OrderedCollection new.
 	turnHandler := TurnHandler newFor: gamePlayers.
 	dices := gameDices copy.
 	playedCards := OrderedCollection new.
@@ -171,11 +178,11 @@ Game >> initializeWith: gamePlayers throwing: gameDices on: aBoard using: aDeck 
 						on: 1
 						andLap: 0
 						holding:
-							{deck nextCard.
-							deck nextCard})} asOrderedCollection ]) asOrderedDictionary.
+							{self primaryDeck nextCard.
+							self primaryDeck nextCard})} asOrderedCollection ])
+		asOrderedDictionary.
 	triggeredEffects := (gamePlayers
-		collect:
-			[ :each | Association key: each value: OrderedCollection new ])
+		collect: [ :each | Association key: each value: OrderedCollection new ])
 		asOrderedDictionary
 ]
 
@@ -324,13 +331,24 @@ Game >> positionsToMoveAfterCalculatingPermanentEffectsOn: player [
 	^ 0
 ]
 
+{ #category : #accessingGame }
+Game >> primaryDeck [
+	^ decks first
+]
+
+{ #category : #validation }
+Game >> primaryDeckIsEmpty [
+	^ self primaryDeck isEmpty
+]
+
 { #category : #'private - effects' }
 Game >> removePlayedCard: playedCard [
 	activePermanentCardEffects
 		remove: playedCard
 		ifAbsent: [ AssertionFailure
 				signal:
-					'Tried to remove a non existent played card (check that both the effect and the target are in order)' ]
+					'Tried to remove a non existent played card (check that both the effect and the target are in order)' ].
+	self discardCard: (Card newWith: playedCard effect)
 ]
 
 { #category : #'private - effects' }
