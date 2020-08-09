@@ -68,7 +68,7 @@ Game >> addPermanentEffectCard: card to: target by: player [
 { #category : #'private - effects' }
 Game >> addPlayedCard: card to: target by: player [
 	| newState newHand |
-	card effect className = 'RedoEffect'
+	card effect class = RedoEffect
 		ifFalse: [ playedCards add: (PlayedCard newOf: card effect to: target) ].
 	newHand := self cardsInHandOf: player.
 	newHand remove: card.
@@ -206,6 +206,15 @@ Game >> lapOf: player [
 	^ (self stateOf: player) lapNumber
 ]
 
+{ #category : #'private - effects' }
+Game >> lastPlayedCard [
+	self
+		assert: playedCards isNotEmpty
+		description:
+			'Cannot play redo card as there are no active played cards on the pile'.
+	^ Card newWith: playedCards last effect
+]
+
 { #category : #'private - moving' }
 Game >> move: player [
 	| newState |
@@ -246,7 +255,10 @@ Game >> play: card by: player on: target [
 		description: 'Trying to play a card for a player that has already finished'.
 	(self stateOf: player) checkAvailabilityOf: card.
 	card applyEffectOn: target on: self triggeredBy: player.
-	self addPlayedCard: card to: target by: player
+	self addPlayedCard: card to: target by: player.
+	card effect value isNil
+		ifTrue: [ self discardCard: card ]
+		ifFalse: [ self addPermanentEffectCard: card to: target by: player ]
 ]
 
 { #category : #playing }
@@ -361,17 +373,6 @@ Game >> repeatLastEffectTriggeredBy: player [
 	"Steping on a null effect still counts as triggering an effect"
 	effect := effectsTriggeredByPlayer last.
 	self apply: effect for: player
-]
-
-{ #category : #'private - effects' }
-Game >> replayLastCardOn: target for: player [
-	| card |
-	self
-		assert: playedCards isNotEmpty
-		description:
-			'Cannot play redo card as there are no active played cards on the pile'.
-	card := Card newWith: playedCards last effect.
-	card applyEffectOn: target on: self triggeredBy: player
 ]
 
 { #category : #'private - effects' }

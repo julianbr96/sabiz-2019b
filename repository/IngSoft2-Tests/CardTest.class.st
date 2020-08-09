@@ -196,6 +196,29 @@ CardTest >> testCancellationCardAffectingOnePlayersRemovesOnlyOneOfHisLocalEffec
 	self assert: (game positionOf: player2) equals: 2
 ]
 
+{ #category : #'tests - deck' }
+CardTest >> testCannotGetAnotherCardIfTheDeckIsEmpty [
+	| game amountOfCards board |
+	board := testResource
+		effectTestingBoardWithSpots: 10
+		and: CardGivingEffect new
+		at: 2.
+	amountOfCards := 6.
+	game := Game
+		newPlayedBy: testResource standardSetOfPlayers
+		throwing: {(SequentialDice newWithSequence: {1})}
+		on: board
+		using:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RedoEffect new)}
+				and: amountOfCards).
+	self assert: game primaryDeckIsEmpty.
+	game throwDicesFor: player1.
+	self assert: (game cardsInHandOf: player1) size equals: 2
+]
+
 { #category : #tests }
 CardTest >> testCantPlayAPermanentCardIfItsNotTheTurnOfThePlayer [
 	| game cardToPlay |
@@ -205,6 +228,20 @@ CardTest >> testCantPlayAPermanentCardIfItsNotTheTurnOfThePlayer [
 		should: [ game play: cardToPlay by: player2 on: { player1. player2 } ]
 		raise: AssertionFailure
 		whoseDescriptionIncludes: 'Cant play a permanent card out of turn'
+]
+
+{ #category : #'tests - deck' }
+CardTest >> testDeckHasGivenDistributionOfCardEffects [
+	| game amountOfCards |
+	amountOfCards := 12.
+	game := self
+		newCardTestingGameWith:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RedoEffect new)}
+				and: amountOfCards).
+	self assert: game primaryDeck size equals: 8
 ]
 
 { #category : #'tests - deck' }
@@ -218,8 +255,7 @@ CardTest >> testGettingACardFromDeckRemovesItFromDeck [
 					{(Card newWith: AccelerationEffect new).
 					(Card newWith: RedoEffect new)}
 				and: amountOfCards).
-	self assert: game primaryDeckIsEmpty not
-	
+	self assert: game primaryDeck size equals: 8
 ]
 
 { #category : #tests }
@@ -394,6 +430,54 @@ CardTest >> testRedoCardCannotBePlayedIfAnotherCardsWereNeverPlayed [
 		raise: AssertionFailure
 		whoseDescriptionIncludes:
 			'Cannot play redo card as there are no active played cards on the pile'
+]
+
+{ #category : #tests }
+CardTest >> testRedoCardIsDiscardedAfterBeingCancelledIfItActsAsAPermanent [
+	| game deck |
+	deck := SequentialDeck
+		newWithSequence:
+			{(Card newWith: AccelerationEffect new).
+			(Card newWith: CancellationEffect new).
+			(Card newWith: RedoEffect new)}
+		and: testResource standardNumberOfCards.
+	game := self newCardTestingGameWith: deck.
+	game throwDicesFor: player1.
+	game throwDicesFor: player2.
+	game
+		play: (Card newWith: AccelerationEffect new)
+		by: player1
+		on: game players.
+	game throwDicesFor: player1.
+	game
+		play: (Card newWith: RedoEffect new)
+		by: player2
+		on: game players.
+	game throwDicesFor: player2.
+	self assert: game discardDeckIsEmpty.
+	game
+		play: (Card newWith: CancellationEffect new)
+		by: player1
+		on: (PlayedCard newOf: RedoEffect new to: game players).
+	self assert: game discardDeck size equals: 2
+]
+
+{ #category : #tests }
+CardTest >> testRedoCardIsDiscardedAfterBeingPlayedIfItActsAsAnInstant [
+	| game deck |
+	deck := SequentialDeck
+		newWithSequence:
+			{(Card newWith: RepeatEffect new).
+			(Card newWith: RedoEffect new)}
+		and: testResource standardNumberOfCards.
+	game := self newCardTestingGameWith: deck.
+	game throwDicesFor: player1.
+	game throwDicesFor: player2.
+	game play: (Card newWith: RepeatEffect new) by: player1 on: {player1}.
+	game throwDicesFor: player1.
+	game play: (Card newWith: RedoEffect new) by: player2 on: {player2}.
+	game throwDicesFor: player2.
+	self assert: game discardDeck size equals: 2
 ]
 
 { #category : #tests }

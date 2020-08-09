@@ -4,6 +4,9 @@ An abstract superclass to model card effects
 Class {
 	#name : #CardEffect,
 	#superclass : #Object,
+	#instVars : [
+		'value'
+	],
 	#category : #'IngSoft2-Model'
 }
 
