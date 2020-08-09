@@ -123,6 +123,33 @@ CardTest >> testAnOverloadCardCantBePlayedOnAPlayerThatFinished [
 ]
 
 { #category : #'tests - deck' }
+CardTest >> testCanGetAnotherCardIfOneOfTheDecksIsNotEmpty [
+	| game amountOfCards board |
+	board := testResource
+		effectTestingBoardWithSpots: 10
+		and: CardGivingEffect new
+		at: 3.
+	amountOfCards := 6.
+	game := Game
+		newPlayedBy: testResource standardSetOfPlayers
+		throwing: {(SequentialDice newWithSequence: {1})}
+		on: board
+		using:
+			(SequentialDeck
+				newWithSequence:
+					{(Card newWith: AccelerationEffect new).
+					(Card newWith: RepeatEffect new)}
+				and: amountOfCards).
+	self assert: game primaryDeckIsEmpty.
+	game playOneRoundWithoutPlayingCards.
+	game play: (Card newWith: RepeatEffect new) by: player1 on: {player1}.
+	game throwDicesFor: player1.
+	self
+		assert: (game primaryDeckIsEmpty and: [ game discardDeckIsEmpty ]).
+	self assert: (game cardsInHandOf: player1) size equals: 2
+]
+
+{ #category : #'tests - deck' }
 CardTest >> testCancellatingAPermanentCardDiscardItToTheDiscardDeck [
 	| game amountOfCards cardToPlay |
 	amountOfCards := 12.
@@ -202,7 +229,7 @@ CardTest >> testCannotGetAnotherCardIfTheDeckIsEmpty [
 	board := testResource
 		effectTestingBoardWithSpots: 10
 		and: CardGivingEffect new
-		at: 2.
+		at: 3.
 	amountOfCards := 6.
 	game := Game
 		newPlayedBy: testResource standardSetOfPlayers
@@ -212,11 +239,13 @@ CardTest >> testCannotGetAnotherCardIfTheDeckIsEmpty [
 			(SequentialDeck
 				newWithSequence:
 					{(Card newWith: AccelerationEffect new).
-					(Card newWith: RedoEffect new)}
+					(Card newWith: RepeatEffect new)}
 				and: amountOfCards).
-	self assert: game primaryDeckIsEmpty.
+	game playOneRoundWithoutPlayingCards.
 	game throwDicesFor: player1.
-	self assert: (game cardsInHandOf: player1) size equals: 2
+	self assert: (game cardsInHandOf: player1) size equals: 2.
+	self
+		assert: (game primaryDeckIsEmpty and: [ game discardDeckIsEmpty ])
 ]
 
 { #category : #tests }

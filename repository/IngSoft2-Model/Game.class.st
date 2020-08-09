@@ -104,8 +104,10 @@ Game >> currentRanking [
 Game >> dealCardTo: player [
 	| newState hand |
 	hand := self cardsInHandOf: player.
-	self primaryDeckIsEmpty
+	(self primaryDeckIsEmpty and: [ self discardDeckIsEmpty ])
 		ifTrue: [ ^ self ].
+	self primaryDeckIsEmpty
+		ifTrue: [ self shuffle ].
 	hand add: self primaryDeck nextCard.
 	newState := PlayerState
 		on: (self positionOf: player)
@@ -402,6 +404,12 @@ Game >> rollSum [
 { #category : #accessingGameState }
 Game >> roundNumber [
 	^ turnHandler currentRoundNumber
+]
+
+{ #category : #adding }
+Game >> shuffle [
+	self discardDeck do: [ :each | self primaryDeck add: each ].
+	decks at: 2 put: OrderedCollection new
 ]
 
 { #category : #accessingPlayer }
