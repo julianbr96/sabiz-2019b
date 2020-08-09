@@ -16,8 +16,7 @@ AccelerationEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
 		assert: target = aGame players
 		description:
 			'Tried to play acceleration card on a specific set of players instead of all of them'.
-	aGame addPermanentEffectCard: card to: target by: aPlayer.
-	aGame addPlayedCard: card to: target by: aPlayer
+	aGame addPermanentEffectCard: card to: target by: aPlayer
 ]
 
 { #category : #evaluating }

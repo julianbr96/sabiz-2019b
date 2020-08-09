@@ -68,7 +68,8 @@ Game >> addPermanentEffectCard: card to: target by: player [
 { #category : #'private - effects' }
 Game >> addPlayedCard: card to: target by: player [
 	| newState newHand |
-	playedCards add: (PlayedCard newOf: card effect to: target).
+	card effect className = 'RedoEffect'
+		ifFalse: [ playedCards add: (PlayedCard newOf: card effect to: target) ].
 	newHand := self cardsInHandOf: player.
 	newHand remove: card.
 	newState := PlayerState
@@ -232,12 +233,13 @@ Game >> numberOfPlayers [
 ]
 
 { #category : #playing }
-Game >> play: card for: player on: target [
+Game >> play: card by: player on: target [
 	self
 		assert: (self playerHasNotFinished: player)
 		description: 'Trying to play a card for a player that has already finished'.
 	(self stateOf: player) checkAvailabilityOf: card.
-	card applyEffectOn: target on: self triggeredBy: player
+	card applyEffectOn: target on: self triggeredBy: player.
+	self addPlayedCard: card to: target by: player
 ]
 
 { #category : #playing }
@@ -345,24 +347,13 @@ Game >> repeatLastEffectTriggeredBy: player [
 
 { #category : #'private - effects' }
 Game >> replayLastCardOn: target for: player [
-	| hand card |
+	| card |
 	self
 		assert: playedCards isNotEmpty
 		description:
 			'Cannot play redo card as there are no active played cards on the pile'.
 	card := Card newWith: playedCards last effect.
-	hand := self cardsInHandOf: player.
-	hand remove: (Card newWith: RedoEffect new).
-	hand add: card.
-	self
-		updateStateFor: player
-		with:
-			(PlayerState
-				on: (self positionOf: player)
-				andLap: (self lapOf: player)
-				andRound: turnHandler currentRoundNumber
-				holding: hand).
-	self play: card for: player on: target
+	card applyEffectOn: target on: self triggeredBy: player
 ]
 
 { #category : #'private - effects' }

@@ -19,8 +19,7 @@ OverloadEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
 		assert: (aGame playerHasNotFinished: target first)
 		description:
 			'The overload card cant be played on a player that has already finished'.
-	aGame addPermanentEffectCard: card to: target by: aPlayer.
-	aGame addPlayedCard: card to: target by: aPlayer
+	aGame addPermanentEffectCard: card to: target by: aPlayer
 ]
 
 { #category : #evaluating }
