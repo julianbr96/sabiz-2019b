@@ -3,7 +3,7 @@ This effect reduces the rollSum of a given player by 2
 "
 Class {
 	#name : #OverloadEffect,
-	#superclass : #CardPermanentEffect,
+	#superclass : #CardEffect,
 	#category : #'IngSoft2-Model'
 }
 
@@ -16,10 +16,23 @@ OverloadEffect >> applyOn: target on: aGame triggeredBy: aPlayer [
 	self
 		assert: (aGame playerHasNotFinished: target first)
 		description:
-			'The overload card cant be played on a player that has already finished'
+			'The overload card cant be played on a player that has already finished'.
+	aGame addPlayedCard: (Card newWith: self) to: target
+]
+
+{ #category : #validation }
+OverloadEffect >> checkTurnOf: aPlayer in: aGame [
+	self
+		assert: aGame playerWhoseTurnItIsToPlay = aPlayer
+		description: 'Cant play a permanent card out of turn'
+]
+
+{ #category : #effect }
+OverloadEffect >> discardOrApplyPermanentEffectTo: target on: aGame [
+	aGame addPermanentEffectCard: (Card newWith: self) to: target
 ]
 
 { #category : #evaluating }
-OverloadEffect >> value [
+OverloadEffect >> permanentEffect [
 	^ -2
 ]
