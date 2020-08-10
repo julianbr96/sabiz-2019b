@@ -97,7 +97,7 @@ Game >> dealCardTo: player [
 	(self primaryDeckIsEmpty and: [ self discardDeckIsEmpty ])
 		ifTrue: [ ^ self ].
 	self primaryDeckIsEmpty
-		ifTrue: [ self shuffle ].
+		ifTrue: [ self shuffleDiscardDeckAndCompletePrimaryDeck ].
 	hand add: self primaryDeck nextCard.
 	newState := PlayerState
 		on: (self positionOf: player)
@@ -406,8 +406,9 @@ Game >> roundNumber [
 	^ turnHandler currentRoundNumber
 ]
 
-{ #category : #adding }
-Game >> shuffle [
+{ #category : #'private - effects' }
+Game >> shuffleDiscardDeckAndCompletePrimaryDeck [
+	self discardDeck shuffle.
 	self discardDeck do: [ :each | self primaryDeck add: each ].
 	decks at: 2 put: OrderedCollection new
 ]

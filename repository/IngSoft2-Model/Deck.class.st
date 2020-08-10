@@ -24,6 +24,11 @@ Deck >> add: aCard [
 	cards add: aCard
 ]
 
+{ #category : #accessing }
+Deck >> cards [
+	^ cards
+]
+
 { #category : #initialization }
 Deck >> initializeWith: cardsCollection [
 	cards := cardsCollection 
