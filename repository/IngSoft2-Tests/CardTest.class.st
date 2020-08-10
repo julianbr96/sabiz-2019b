@@ -526,6 +526,60 @@ CardTest >> testRepeatCardRepeatesTheEffectOfTheSpotReachedAfterRollingDices [
 	self assert: (game lapOf: player1) equals: 1
 ]
 
+{ #category : #'tests - deck' }
+CardTest >> testShuffleDiscardDeckAndCompletePrimaryDeckHasTheSameCardsTheDiscardDeckUsedToHave [
+	| numberOfCards game deck spotCollection |
+	spotCollection := OrderedCollection
+		new: 10
+		withAll: (Spot newWith: CardGivingEffect new).
+	numberOfCards := 4.
+	deck := SequentialDeck
+		newWithSequence:
+			{(Card newWith: AccelerationEffect new).
+			(Card newWith: CancellationEffect new).
+			(Card newWith: RedoEffect new)}
+		and: numberOfCards.
+	game := Game
+		newPlayedBy: {player1}
+		throwing: {(SequentialDice newWithSequence: {1})}
+		on: (Board with: spotCollection andLaps: 5)
+		using: deck.
+	game
+		play: (Card newWith: AccelerationEffect new)
+		by: player1
+		on: game players.
+	game throwDicesFor: player1.
+	game playOneRoundWithoutPlayingCards.
+	game
+		play: (Card newWith: AccelerationEffect new)
+		by: player1
+		on: game players.
+	game throwDicesFor: player1.
+	game
+		play: (Card newWith: CancellationEffect new)
+		by: player1
+		on: (PlayedCard newOf: AccelerationEffect new to: game players).
+	game
+		play: (Card newWith: RedoEffect new)
+		by: player1
+		on: (PlayedCard newOf: AccelerationEffect new to: game players).
+	self
+		assert: [ game discardDeck size = 4
+				and: [ game discardDeck
+						includesAll:
+							{(Card newWith: AccelerationEffect new).
+							(Card newWith: CancellationEffect new).
+							(Card newWith: RedoEffect new)} ] ].
+	game throwDicesFor: player1.
+	self
+		assert: [ game primaryDeck size = 3
+				and: [ game primaryDeck cards
+						includesAny:
+							{(Card newWith: CancellationEffect new).
+							(Card newWith: AccelerationEffect new).
+							(Card newWith: RedoEffect new)} ] ]
+]
+
 { #category : #tests }
 CardTest >> testSpeedEffectIncreasesByOneTheRollResulOfOnlyOnePlayerAndIsAcumulative [
 	| game cardToPlay |
